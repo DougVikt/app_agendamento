@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pedagogico - {{ nome }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        [data-bs-theme="dark"] { --bs-primary: #00a859; --bs-primary-rgb: 0, 168, 89; --bs-link-color: #00a859; }
+        .btn-primary { --bs-btn-bg: #00a859; --bs-btn-border-color: #00a859; }
+        .btn-primary:hover { --bs-btn-hover-bg: #008f4a; --bs-btn-hover-border-color: #008f4a; }
+        .btn-outline-success { --bs-btn-color: #00a859; --bs-btn-border-color: #00a859; }
+        .btn-outline-success:hover { --bs-btn-hover-bg: #00a859; --bs-btn-hover-border-color: #00a859; }
+        .navbar { background-color: #008f4a !important; }
+        .cal-cell { cursor: pointer; text-align: center; padding: 6px 0; border-radius: 6px; transition: .1s; }
+        .cal-cell:hover { background: #00a85933; }
+        .cal-cell.today { border: 2px solid #00a859; font-weight: bold; }
+        .cal-cell.has-agenda { background: #00a85922; font-weight: bold; }
+        .cal-cell.empty { cursor: default; }
+        .cal-cell .badge { font-size: 9px; }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">Pedagogico - {{ nome }}</span>
+            <a href="/historico" class="btn btn-outline-light btn-sm me-2">Historico</a>
+            <a href="/login/pedagogico" class="btn btn-outline-light btn-sm">Sair</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="alertBox" class="alert alert-warning d-none shadow" role="alert">
+            <strong>Atencao!</strong> <span id="alertMsg"></span>
+        </div>
+
+        <div class="row">
+            <!-- COLUNA ESQUERDA: formulario de horarios -->
+            <div class="col-md-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header"><h5 class="mb-0">Adicionar Horario</h5></div>
+                    <div class="card-body">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" id="recorrente" class="form-check-input" onchange="toggleRecorrente()">
+                            <label class="form-check-label" for="recorrente">Repetir semanalmente</label>
+                        </div>
+                        <div id="dataDiv" class="mb-3">
+                            <label class="form-label">Data</label>
+                            <input type="date" id="data" class="form-control">
+                        </div>
+                        <div id="diaSemanaDiv" class="mb-3 d-none">
+                            <label class="form-label">Dia da Semana</label>
+                            <select id="dia_semana" class="form-select">
+                                <option value="0">Segunda-feira</option>
+                                <option value="1">Terca-feira</option>
+                                <option value="2">Quarta-feira</option>
+                                <option value="3">Quinta-feira</option>
+                                <option value="4">Sexta-feira</option>
+                                <option value="5">Sabado</option>
+                                <option value="6">Domingo</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Inicio</label>
+                                <input type="time" id="hora_inicio" class="form-control">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Fim</label>
+                                <input type="time" id="hora_fim" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Intervalo (min)</label>
+                            <input type="number" id="intervalo" class="form-control" value="30" min="5" step="5">
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="adicionar()">Adicionar Horario</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUNA DIREITA -->
+            <div class="col-md-8">
+                <!-- Horarios cadastrados -->
+                <div class="card shadow mb-4">
+                    <div class="card-header"><h5 class="mb-0">Meus Horarios</h5></div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Data / Recorrencia</th><th>Inicio</th><th>Fim</th><th>Int.</th><th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaHorarios"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini Calendario -->
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Calendario</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="navMes(-1)">&lt;</button>
+                            <span id="mesTitulo" class="mx-2"></span>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="navMes(1)">&gt;</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="calendarioBody"></div>
+                </div>
+
+                <!-- Agendamentos -->
+                <div class="card shadow">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Meus Agendamentos</h5>
+                        <div>
+                            <span id="filtroDataLabel" class="me-2 small text-muted d-none"></span>
+                            <button id="btnLimparFiltro" class="btn btn-sm btn-outline-secondary d-none" onclick="limparFiltroData()">Mostrar todos</button>
+                            <span id="qtdAgd" class="badge bg-success ms-2">0</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Aluno</th><th>Tel.</th><th>Tipo</th><th>Data</th><th>Hora</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAgendamentos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalObs" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5>Observações</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalObsTexto"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-muted small py-3">{{ versao }}</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const DIAS_CAL = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+        const DIAS_COMPLETO = ['Segunda-feira','Terca-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sabado','Domingo'];
+
+        function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
+
+        function verObs(el) { document.getElementById('modalObsTexto').textContent = decodeURIComponent(el.dataset.obs); new bootstrap.Modal(document.getElementById('modalObs')).show(); }
+
+        let pedagogicoId = null;
+        let calendarioData = { ano: 0, mes: 0 };
+        let filtroData = null;
+
+        function toggleRecorrente() {
+            const rec = document.getElementById('recorrente').checked;
+            document.getElementById('dataDiv').classList.toggle('d-none', rec);
+            document.getElementById('diaSemanaDiv').classList.toggle('d-none', !rec);
+        }
+
+        function getId() {
+            return fetch('/api/pedagogicos').then(r => r.json()).then(data => {
+                pedagogicoId = data.find(x => x.nome === '{{ nome }}').id;
+            });
+        }
+
+        function carregarHorarios() {
+            fetch('/api/horarios/' + pedagogicoId).then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tabelaHorarios');
+                tbody.innerHTML = '';
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Nenhum horario</td></tr>'; return; }
+                data.forEach(h => {
+                    const dataStr = h.recorrente ? `Semanal - ${DIAS_COMPLETO[h.dia_semana]}` : fmtD(h.data);
+                    tbody.innerHTML += `<tr><td>${dataStr}</td><td>${h.hora_inicio}</td><td>${h.hora_fim}</td><td>${h.intervalo}min</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removerHorario(${h.id})">X</button></td></tr>`;
+                });
+            });
+        }
+
+        function marcarStatus(id, status) {
+            fetch('/api/agendamentos/' + id + '/status', {
+                method: 'PATCH', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status})
+            }).then(r => r.json()).then(() => { carregarAgendamentos(); carregarAlertas(); });
+        }
+
+        function carregarAgendamentos() {
+            let url = '/api/agendamentos?pedagogico_id=' + pedagogicoId;
+            if (filtroData) url += '&data=' + filtroData;
+            fetch(url).then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tabelaAgendamentos');
+                document.getElementById('qtdAgd').textContent = data.length;
+                tbody.innerHTML = '';
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum agendamento</td></tr>'; return; }
+                const agora = new Date();
+                data.forEach(a => {
+                    const passou = new Date(a.data + 'T' + a.hora_inicio) < agora;
+                    let acao = '';
+                    if (a.status === 'Agendado') {
+                        acao = passou
+                            ? `<div class="btn-group btn-group-xs">
+                                <button class="btn btn-success btn-sm py-0 px-1" onclick="marcarStatus(${a.id},'Atendido')" title="Atendido">&#10003;</button>
+                                <button class="btn btn-warning btn-sm py-0 px-1" onclick="marcarStatus(${a.id},'Ausente')" title="Ausente">X</button>
+                               </div>`
+                            : '<span class="badge bg-primary">Agendado</span>';
+                    } else if (a.status === 'Atendido') {
+                        acao = '<span class="badge bg-success">Atendido</span>';
+                    } else if (a.status === 'Ausente') {
+                        acao = '<span class="badge bg-warning text-dark">Ausente</span>';
+                    } else if (a.status === 'Cancelado') {
+                        acao = '<span class="badge bg-secondary">Cancelado</span>';
+                    }
+                    tbody.innerHTML += `<tr><td>${a.aluno}${a.observacoes ? ` <span class="text-muted" style="cursor:pointer" onclick="verObs(this)" data-obs="${encodeURIComponent(a.observacoes)}">&#9998;</span>` : ''}</td><td>${a.telefone || ''}</td><td>${a.tipo}</td>
+                        <td>${fmtD(a.data)}</td><td>${a.hora_inicio}</td><td class="text-nowrap">${acao}</td></tr>`;
+                });
+            });
+        }
+
+        function carregarAlertas() {
+            fetch('/api/agendamentos?pedagogico_id=' + pedagogicoId + '&status=pendentes')
+                .then(r => r.json()).then(data => {
+                const box = document.getElementById('alertBox'), msg = document.getElementById('alertMsg');
+                if (!data.length) { box.classList.add('d-none'); return; }
+                box.classList.remove('d-none');
+                msg.innerHTML = `${data.length} pendente(s)! ` +
+                    data.map(a => `<br><small>${a.aluno} - ${a.tipo} - ${fmtD(a.data)} ${a.hora_inicio}</small>`).join('');
+            });
+        }
+
+        // ---- CALENDARIO ----
+        function renderCalendar(ano, mes) {
+            calendarioData = { ano, mes };
+            document.getElementById('mesTitulo').textContent =
+                new Date(ano, mes).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            const primeiro = new Date(ano, mes, 1).getDay();
+            const ultimo = new Date(ano, mes + 1, 0).getDate();
+            const hoje = new Date();
+            const hojeStr = hoje.toISOString().split('T')[0];
+
+            // Fetch appointments for this month
+            const inicio = `${ano}-${String(mes+1).padStart(2,'0')}-01`;
+            const fim = `${ano}-${String(mes+1).padStart(2,'0')}-${String(ultimo).padStart(2,'0')}`;
+            fetch(`/api/agendamentos?pedagogico_id=${pedagogicoId}&data_inicio=${inicio}&data_fim=${fim}`)
+                .then(r => r.json()).then(agendamentos => {
+                const diasComAgenda = new Set();
+                agendamentos.forEach(a => diasComAgenda.add(a.data));
+
+                let h = '<table class="w-100"><tr>';
+                DIAS_CAL.forEach(d => { h += `<th class="text-center small text-muted py-1">${d}</th>`; });
+                h += '</tr><tr>';
+                for (let i = 0; i < primeiro; i++) h += '<td></td>';
+                for (let dia = 1; dia <= ultimo; dia++) {
+                    const dataStr = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+                    const ehHoje = dataStr === hojeStr;
+                    const temAgenda = diasComAgenda.has(dataStr);
+                    const cls = `cal-cell${ehHoje?' today':''}${temAgenda?' has-agenda':''}`;
+                    h += `<td class="${cls}" onclick="clicouDia('${dataStr}')">${dia}${temAgenda?' <span class="badge bg-success">&#8226;</span>':''}</td>`;
+                    if ((primeiro + dia) % 7 === 0 && dia < ultimo) h += '</tr><tr>';
+                }
+                h += '</tr></table>';
+                document.getElementById('calendarioBody').innerHTML = h;
+            });
+        }
+
+        function navMes(delta) {
+            let m = calendarioData.mes + delta;
+            let a = calendarioData.ano;
+            if (m < 0) { m = 11; a--; }
+            if (m > 11) { m = 0; a++; }
+            renderCalendar(a, m);
+        }
+
+        function clicouDia(dataStr) {
+            filtroData = dataStr;
+            document.getElementById('filtroDataLabel').textContent = 'Filtrando: ' + fmtD(dataStr);
+            document.getElementById('filtroDataLabel').classList.remove('d-none');
+            document.getElementById('btnLimparFiltro').classList.remove('d-none');
+            carregarAgendamentos();
+        }
+
+        function limparFiltroData() {
+            filtroData = null;
+            document.getElementById('filtroDataLabel').classList.add('d-none');
+            document.getElementById('btnLimparFiltro').classList.add('d-none');
+            carregarAgendamentos();
+        }
+
+        function adicionar() {
+            const rec = document.getElementById('recorrente').checked;
+            const data = document.getElementById('data').value;
+            const dia_semana = parseInt(document.getElementById('dia_semana').value);
+            const hi = document.getElementById('hora_inicio').value;
+            const hf = document.getElementById('hora_fim').value;
+            const intv = parseInt(document.getElementById('intervalo').value) || 30;
+            if (rec) {
+                if (!hi || !hf) return alert('Preencha horario de inicio e fim');
+            } else {
+                if (!data || !hi || !hf) return alert('Preencha todos os campos');
+            }
+            if (hi >= hf) return alert('Hora inicio deve ser menor que hora fim');
+            fetch('/api/horarios', { method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    pedagogico_id: pedagogicoId,
+                    data: rec ? '' : data,
+                    hora_inicio: hi, hora_fim: hf, intervalo: intv,
+                    recorrente: rec ? 1 : 0,
+                    dia_semana: rec ? dia_semana : 0
+                }) })
+                .then(r => r.json()).then(() => {
+                document.getElementById('data').value = '';
+                document.getElementById('hora_inicio').value = '';
+                document.getElementById('hora_fim').value = '';
+                carregarHorarios();
+                if (calendarioData.ano) renderCalendar(calendarioData.ano, calendarioData.mes);
+            });
+        }
+
+        function removerHorario(id) {
+            if (!confirm('Remover?')) return;
+            fetch('/api/horarios/' + id, {method: 'DELETE'}).then(() => {
+                carregarHorarios();
+                if (calendarioData.ano) renderCalendar(calendarioData.ano, calendarioData.mes);
+            });
+        }
+
+        const amanha = new Date(); amanha.setDate(amanha.getDate() + 1);
+        document.getElementById('data').value = amanha.toISOString().split('T')[0];
+
+        getId().then(() => {
+            carregarHorarios(); carregarAgendamentos(); carregarAlertas();
+            const hoje = new Date();
+            renderCalendar(hoje.getFullYear(), hoje.getMonth());
+            setInterval(() => {
+                carregarAgendamentos(); carregarAlertas();
+                if (calendarioData.ano) renderCalendar(calendarioData.ano, calendarioData.mes);
+            }, 15000);
+        });
+    </script>
+</body>
+</html>
