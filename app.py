@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = 'agenda2026secret'
 VERSAO = "v1.0"
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '.agenda.db')
+DB_PATH = os.environ.get("AGENDA_DB") or os.path.join(os.path.dirname(__file__), '.agenda.db')
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=10)
