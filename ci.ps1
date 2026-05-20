@@ -91,9 +91,17 @@ try {
 
 # 3i: Page rendering
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/login" -UseBasicParsing
-    if ($r.StatusCode -eq 200) { $tests += "Pagina login: OK" } else { $tests += "Pagina login: FAIL"; $failed++ }
-} catch { $tests += "Pagina login: FAIL ($_)"; $failed++ }
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/" -UseBasicParsing
+    if ($r.StatusCode -eq 200) { $tests += "Pagina inicial: OK" } else { $tests += "Pagina inicial: FAIL"; $failed++ }
+} catch { $tests += "Pagina inicial: FAIL ($_)"; $failed++ }
+try {
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/admin" -UseBasicParsing
+    if ($r.StatusCode -eq 200) { $tests += "Pagina admin: OK" } else { $tests += "Pagina admin: FAIL"; $failed++ }
+} catch { $tests += "Pagina admin: FAIL ($_)"; $failed++ }
+try {
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/logout" -UseBasicParsing -MaximumRedirection 0
+    if ($r.StatusCode -eq 302) { $tests += "Logout redirect: OK" } else { $tests += "Logout redirect: FAIL"; $failed++ }
+} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Logout redirect: OK" } else { $tests += "Logout redirect: FAIL"; $failed++ } }
 try {
     $r = Invoke-WebRequest "http://127.0.0.1:5000/historico" -UseBasicParsing
     if ($r.StatusCode -eq 200) { $tests += "Pagina historico: OK" } else { $tests += "Pagina historico: FAIL"; $failed++ }

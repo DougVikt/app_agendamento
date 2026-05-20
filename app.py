@@ -113,9 +113,9 @@ def slots_disponiveis(pedagogico_id, data):
 # ---------------------------------------------------------------------------
 @app.route("/")
 def index():
-    return redirect("/login")
+    return render_template("landing.html", versao=VERSAO)
 
-@app.route("/login", methods=["GET"])
+@app.route("/admin", methods=["GET"])
 def pagina_login():
     return render_template("index.html", versao=VERSAO)
 
@@ -138,20 +138,20 @@ def login_pedagogico():
         return redirect("/login/pedagogico")
     return render_template("acesso_pedagogico.html", versao=VERSAO)
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/login")
-
 @app.route("/pedagogico")
 def pagina_pedagogico():
-    if session.get("role") != "pedagogico": return redirect("/login")
+    if session.get("role") != "pedagogico": return redirect("/admin")
     return render_template("pedagogico.html", nome=session.get("user"), versao=VERSAO)
 
 @app.route("/central")
 def pagina_central():
-    if session.get("role") != "central": return redirect("/login")
+    if session.get("role") != "central": return redirect("/admin")
     return render_template("central.html", versao=VERSAO)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/admin")
 
 @app.route("/historico")
 def pagina_historico():
@@ -195,7 +195,7 @@ def renomear_pedagogico(id_):
         return jsonify({"ok": True, "nome": nome})
     except sqlite3.IntegrityError:
         conn.close()
-        return jsonify({"erro": "Ja existe um pedagogico com esse nome"}), 400
+        return jsonify({"erro": "Ja existe um colaborador com esse nome"}), 400
 
 @app.route("/api/pedagogicos/<int:id_>", methods=["DELETE"])
 def remover_pedagogico(id_):

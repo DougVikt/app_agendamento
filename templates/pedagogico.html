@@ -205,13 +205,14 @@
                 data.forEach(a => {
                     const passou = new Date(a.data + 'T' + a.hora_inicio) < agora;
                     let acao = '';
+                    const cancBtn = `<button class="btn btn-outline-danger btn-sm py-0 px-1 ms-1" onclick="marcarStatus(${a.id},'Cancelado')" title="Cancelar">&#10007;</button>`;
                     if (a.status === 'Agendado') {
                         acao = passou
                             ? `<div class="btn-group btn-group-xs">
                                 <button class="btn btn-success btn-sm py-0 px-1" onclick="marcarStatus(${a.id},'Atendido')" title="Atendido">&#10003;</button>
                                 <button class="btn btn-warning btn-sm py-0 px-1" onclick="marcarStatus(${a.id},'Ausente')" title="Ausente">X</button>
-                               </div>`
-                            : '<span class="badge bg-primary">Agendado</span>';
+                               </div>${cancBtn}`
+                            : `<span class="badge bg-primary">Agendado</span> ${cancBtn}`;
                     } else if (a.status === 'Atendido') {
                         acao = '<span class="badge bg-success">Atendido</span>';
                     } else if (a.status === 'Ausente') {
