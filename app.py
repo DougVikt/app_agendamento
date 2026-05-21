@@ -140,12 +140,12 @@ def login_pedagogico():
 
 @app.route("/pedagogico")
 def pagina_pedagogico():
-    if session.get("role") != "pedagogico": return redirect("/")
+    if session.get("role") != "pedagogico": return redirect("/inicio_pedagogico")
     return render_template("pedagogico.html", nome=session.get("user"), versao=VERSAO)
 
 @app.route("/central")
 def pagina_central():
-    if session.get("role") != "central": return redirect("/")
+    if session.get("role") != "central": return redirect("/inicio_central")
     return render_template("central.html", versao=VERSAO)
 
 @app.route("/logout")
