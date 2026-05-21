@@ -26,12 +26,12 @@
                 <h3 class="mb-3">Sistema de Agendamento</h3>
                 <p class="text-muted mb-4">Escolha seu perfil</p>
 
-                <a href="/login/central" class="btn btn-outline-primary w-100 mb-3 py-3">
+                <a href="/inicio_central" class="btn btn-outline-primary w-100 mb-3 py-3">
                     Central de Atendimento
                     <small class="d-block text-muted">Fazer agendamentos</small>
                 </a>
 
-                <a href="/login/pedagogico" class="btn btn-outline-success w-100 py-3 mb-3">
+                <a href="/inicio_pedagogico" class="btn btn-outline-success w-100 py-3 mb-3">
                     Pedagógico
                     <small class="d-block text-muted">Gerenciar meus horarios</small>
                 </a>
@@ -164,7 +164,7 @@
 
     <div class="text-center text-muted small py-3">{{ versao }}</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/static/sw.js');</script>
+    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
     <script>
         function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
 

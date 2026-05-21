@@ -119,7 +119,7 @@ def index():
 def pagina_login():
     return render_template("index.html", versao=VERSAO)
 
-@app.route("/login/central", methods=["GET", "POST"])
+@app.route("/inicio_central", methods=["GET", "POST"])
 def login_central():
     if request.method == "POST":
         session["user"] = "Central"
@@ -127,7 +127,7 @@ def login_central():
         return redirect("/central")
     return render_template("acesso_central.html", versao=VERSAO)
 
-@app.route("/login/pedagogico", methods=["GET", "POST"])
+@app.route("/inicio_pedagogico", methods=["GET", "POST"])
 def login_pedagogico():
     if request.method == "POST":
         n = request.form.get("nome", "").strip()
@@ -135,23 +135,27 @@ def login_pedagogico():
             session["user"] = n
             session["role"] = "pedagogico"
             return redirect("/pedagogico")
-        return redirect("/login/pedagogico")
+        return redirect("/inicio_pedagogico")
     return render_template("acesso_pedagogico.html", versao=VERSAO)
 
 @app.route("/pedagogico")
 def pagina_pedagogico():
-    if session.get("role") != "pedagogico": return redirect("/admin")
+    if session.get("role") != "pedagogico": return redirect("/")
     return render_template("pedagogico.html", nome=session.get("user"), versao=VERSAO)
 
 @app.route("/central")
 def pagina_central():
-    if session.get("role") != "central": return redirect("/admin")
+    if session.get("role") != "central": return redirect("/")
     return render_template("central.html", versao=VERSAO)
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/admin")
+
+@app.route("/sw.js")
+def service_worker():
+    return app.send_static_file("sw.js")
 
 @app.route("/historico")
 def pagina_historico():

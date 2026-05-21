@@ -80,12 +80,12 @@ try {
 
 # 3h: Login endpoints
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/login/central" -Method POST -UseBasicParsing -MaximumRedirection 0
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/inicio_central" -Method POST -UseBasicParsing -MaximumRedirection 0
     if ($r.StatusCode -eq 302) { $tests += "Login Central: OK" } else { $tests += "Login Central: FAIL ($($r.StatusCode))"; $failed++ }
 } catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Login Central: OK" } else { $tests += "Login Central: FAIL"; $failed++ } }
 
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/login/pedagogico" -Method POST -Body "nome=Teste CI" -UseBasicParsing -MaximumRedirection 0
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/inicio_pedagogico" -Method POST -Body "nome=Teste CI" -UseBasicParsing -MaximumRedirection 0
     if ($r.StatusCode -eq 302) { $tests += "Login Pedagogico: OK" } else { $tests += "Login Pedagogico: FAIL ($($r.StatusCode))"; $failed++ }
 } catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Login Pedagogico: OK" } else { $tests += "Login Pedagogico: FAIL"; $failed++ } }
 

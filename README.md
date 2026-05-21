@@ -107,7 +107,7 @@ Se não definida, o banco será criado como `.agenda.db` no diretório do projet
 
 ### Para Professores/Pessoal Técnico
 
-1. Acesse `http://localhost:5000/login/pedagogico`
+1. Acesse `http://localhost:5000/inicio_pedagogico`
 2. Faça login com seu nome cadastrado
 3. Visualize seus horários disponíveis
 4. Gerencie seus próprios agendamentos

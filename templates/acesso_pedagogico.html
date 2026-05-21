@@ -19,7 +19,7 @@
             <div class="card-body p-4 text-center">
                 <h3 class="mb-3">Pedagógico</h3>
                 <p class="text-muted mb-4">Selecione seu nome para acessar</p>
-                <form action="/login/pedagogico" method="post">
+                <form action="/inicio_pedagogico" method="post">
                     <div class="mb-3">
                         <select name="nome" class="form-select" id="selectPed" required>
                             <option value="">Selecione...</option>
@@ -27,7 +27,7 @@
                     </div>
                     <button type="submit" class="btn btn-success w-100 py-3">Entrar</button>
                 </form>
-                <p class="mt-2 small"><a href="/login/pedagogico?cadastrar=1" id="linkCadastrar">Sou novo — cadastrar</a></p>
+                <p class="mt-2 small"><a href="/inicio_pedagogico?cadastrar=1" id="linkCadastrar">Sou novo — cadastrar</a></p>
             </div>
         </div>
     </div>
@@ -48,7 +48,7 @@
     </div>
     <div class="text-center text-muted small py-3">{{ versao }}</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/static/sw.js');</script>
+    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
     <script>
         function carregar() {
             fetch('/api/pedagogicos').then(r => r.json()).then(data => {
