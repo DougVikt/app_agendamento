@@ -1,7 +1,7 @@
 {
-  "name": "Sistema de Agendamento",
-  "short_name": "Agenda",
-  "start_url": "/",
+  "name": "Pedagogico",
+  "short_name": "Pedagogico",
+  "start_url": "/pedagogico",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",

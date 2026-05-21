@@ -168,6 +168,6 @@ Para questões, sugestões ou relatos de problemas, por favor abra uma issue nes
 
 ---
 
-**Versão**: v1.0  
+**Versão**: v2.0  
 **Última atualização**: Maio 2026  
 **Desenvolvido com**: Python & Flask  

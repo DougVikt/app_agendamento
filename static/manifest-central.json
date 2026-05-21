@@ -1,7 +1,7 @@
 {
-  "name": "Sistema de Agendamento",
-  "short_name": "Agenda",
-  "start_url": "/",
+  "name": "Central de Atendimento",
+  "short_name": "Central",
+  "start_url": "/central",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",
