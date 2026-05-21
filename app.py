@@ -328,6 +328,22 @@ def atualizar_status(id_):
     conn.commit(); conn.close()
     return jsonify({"ok": True})
 
+@app.route("/api/agendamentos/<int:id_>", methods=["PATCH"])
+def editar_agendamento(id_):
+    d = request.get_json()
+    campos = []
+    params = []
+    for col in ['aluno','matricula','telefone','tipo','observacoes']:
+        if col in d:
+            campos.append(f"{col}=?")
+            params.append(d[col].strip() if isinstance(d[col],str) else d[col])
+    if not campos: return jsonify({"erro":"Nenhum campo para alterar"}),400
+    params.append(id_)
+    conn = get_db()
+    conn.execute(f"UPDATE agendamentos SET {', '.join(campos)} WHERE id=?", params)
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
 @app.route("/api/agendamentos/<int:id_>", methods=["DELETE"])
 def cancelar_agendamento(id_):
     conn = get_db()
