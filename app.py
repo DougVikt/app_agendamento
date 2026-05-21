@@ -159,7 +159,8 @@ def service_worker():
 
 @app.route("/historico")
 def pagina_historico():
-    return render_template("historico.html", versao=VERSAO)
+    role = session.get("role")
+    return render_template("historico.html", versao=VERSAO, role=role)
 
 # ---------------------------------------------------------------------------
 # API - PEDAGOGICOS

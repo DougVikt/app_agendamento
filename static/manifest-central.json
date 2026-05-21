@@ -1,7 +1,7 @@
 {
   "name": "Central de Atendimento",
   "short_name": "Central",
-  "start_url": "/central",
+  "start_url": "/inicio_central",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",

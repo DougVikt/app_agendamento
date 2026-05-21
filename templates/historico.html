@@ -18,6 +18,15 @@
     <nav class="navbar navbar-dark mb-4">
         <div class="container">
             <span class="navbar-brand mb-0 h1">Historico de Atendimentos</span>
+            <div>
+                {% if role == 'central' %}
+                    <a href="/central" class="btn btn-outline-light btn-sm">Voltar</a>
+                {% elif role == 'pedagogico' %}
+                    <a href="/pedagogico" class="btn btn-outline-light btn-sm">Voltar</a>
+                {% else %}
+                    <a href="/" class="btn btn-outline-light btn-sm">Voltar</a>
+                {% endif %}
+            </div>
         </div>
     </nav>
 
