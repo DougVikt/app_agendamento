@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#1e1e1e"/>
+  <rect x="60" y="100" width="392" height="370" rx="24" fill="#00a859"/>
+  <rect x="60" y="160" width="392" height="50" fill="#1e1e1e" opacity="0.15"/>
+  <rect x="120" y="40" width="40" height="90" rx="6" fill="#555"/>
+  <rect x="352" y="40" width="40" height="90" rx="6" fill="#555"/>
+  <text x="256" y="320" font-family="Arial,sans-serif" font-size="80" font-weight="bold" fill="#fff" text-anchor="middle">A</text>
+  <text x="256" y="400" font-family="Arial,sans-serif" font-size="48" font-weight="bold" fill="#fff" text-anchor="middle">Agenda</text>
+</svg>

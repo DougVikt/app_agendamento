@@ -1,0 +1,10 @@
+{
+  "name": "Sistema de Agendamento",
+  "short_name": "Agenda",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#00a859",
+  "icons": [{ "src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistema de Agendamento</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        [data-bs-theme="dark"] { --bs-primary: #00a859; --bs-primary-rgb: 0, 168, 89; --bs-link-color: #00a859; }
+        .btn-primary { --bs-btn-bg: #00a859; --bs-btn-border-color: #00a859; }
+        .btn-primary:hover { --bs-btn-hover-bg: #008f4a; --bs-btn-hover-border-color: #008f4a; }
+        .btn-outline-primary { --bs-btn-color: #00a859; --bs-btn-border-color: #00a859; }
+        .btn-outline-primary:hover { --bs-btn-hover-bg: #00a859; --bs-btn-hover-border-color: #00a859; }
+        .btn-outline-success { --bs-btn-color: #00a859; --bs-btn-border-color: #00a859; }
+        .btn-outline-success:hover { --bs-btn-hover-bg: #00a859; --bs-btn-hover-border-color: #00a859; }
+        .btn-outline-danger { --bs-btn-color: #dc3545; --bs-btn-border-color: #dc3545; }
+        .btn-outline-danger:hover { --bs-btn-hover-bg: #dc3545; --bs-btn-hover-border-color: #dc3545; }
+    </style>
+</head>
+<body class="d-flex align-items-center min-vh-100 bg-body-tertiary">
+    <div class="container" style="max-width: 500px;">
+        <div class="card shadow">
+            <div class="card-body p-4 text-center">
+                <h3 class="mb-3">Sistema de Agendamento</h3>
+                <p class="text-muted mb-4">Escolha seu perfil</p>
+
+                <a href="/inicio_central" class="btn btn-outline-primary w-100 mb-3 py-3">
+                    Central de Atendimento
+                    <small class="d-block text-muted">Fazer agendamentos</small>
+                </a>
+
+                <a href="/inicio_pedagogico" class="btn btn-outline-success w-100 py-3 mb-3">
+                    Pedagógico
+                    <small class="d-block text-muted">Gerenciar meus horarios</small>
+                </a>
+
+                <p class="text-muted small mt-3">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalGerenciar">Gerenciar pedagogicos</a>
+                    &nbsp;|&nbsp;
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalAgendamentos">Gerenciar agendamentos</a>
+                    &nbsp;|&nbsp;
+                    <a href="/historico">Historico</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalGerenciar" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Gerenciar Pedagogicos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-end mb-3">
+                        <button class="btn btn-primary btn-sm" onclick="abrirCadastro()">+ Novo</button>
+                    </div>
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr><th>Nome</th><th class="text-end" style="width:140px"></th></tr>
+                        </thead>
+                        <tbody id="tabelaPedagogicos"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 id="editarTitulo">Editar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="editarNome" class="form-control" placeholder="Nome do pedagogico">
+                    <input type="hidden" id="editarId" value="">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="salvarEdicao()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalNovoProf" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5>Novo Pedagogico</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="novoProfNome" class="form-control" placeholder="Nome do pedagogico">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="cadastrarProf()">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAgendamentos" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Gerenciar Agendamentos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="table-responsive" style="max-height:70vh;overflow-y:auto">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Aluno</th><th>Tel.</th><th>Tipo</th><th>Ped.</th><th>Data</th><th>Hora</th><th>Status</th>
+                                    <th class="text-end" style="width:130px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAgendamentos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditAg" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5>Editar Agendamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editAgId">
+                    <div class="mb-2">
+                        <label class="form-label small">Aluno</label>
+                        <input type="text" id="editAgAluno" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Telefone</label>
+                        <input type="text" id="editAgTel" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Tipo</label>
+                        <input type="text" id="editAgTipo" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Matricula</label>
+                        <input type="text" id="editAgMat" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Observacoes</label>
+                        <textarea id="editAgObs" class="form-control form-control-sm" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-sm" onclick="salvarEditAg()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-muted small py-3">{{ versao }}</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
+    <script>
+        function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
+
+        function carregarAgendamentos() {
+            fetch('/api/agendamentos').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tabelaAgendamentos');
+                tbody.innerHTML = '';
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">Nenhum agendamento</td></tr>'; return; }
+                data.forEach(a => {
+                    const badge = a.status==='Atendido'?'bg-success':a.status==='Cancelado'?'bg-secondary':a.status==='Ausente'?'bg-warning text-dark':'bg-primary';
+                    tbody.innerHTML += `<tr>
+                        <td class="small">${a.aluno}</td>
+                        <td class="small">${a.telefone||''}</td>
+                        <td class="small">${a.tipo}</td>
+                        <td class="small">${a.pedagogico_nome}</td>
+                        <td class="small">${fmtD(a.data)}</td>
+                        <td class="small">${a.hora_inicio}</td>
+                        <td class="small"><span class="badge ${badge}">${a.status}</span></td>
+                        <td class="text-end small">
+                            <button class="btn btn-outline-primary btn-sm py-0 px-2" onclick="editarAg(${a.id},'${(a.aluno||'').replace(/'/g,"\\'")}','${(a.telefone||'').replace(/'/g,"\\'")}','${(a.tipo||'').replace(/'/g,"\\'")}','${(a.matricula||'').replace(/'/g,"\\'")}','${(a.observacoes||'').replace(/'/g,"\\'")}')">Editar</button>
+                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="excluirAg(${a.id},'${(a.aluno||'').replace(/'/g,"\\'")}')">Excluir</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+        }
+
+        function editarAg(id, aluno, tel, tipo, mat, obs) {
+            document.getElementById('editAgId').value = id;
+            document.getElementById('editAgAluno').value = aluno;
+            document.getElementById('editAgTel').value = tel;
+            document.getElementById('editAgTipo').value = tipo;
+            document.getElementById('editAgMat').value = mat;
+            document.getElementById('editAgObs').value = obs;
+            new bootstrap.Modal(document.getElementById('modalEditAg')).show();
+        }
+
+        function salvarEditAg() {
+            const id = document.getElementById('editAgId').value;
+            const body = {
+                aluno: document.getElementById('editAgAluno').value.trim(),
+                telefone: document.getElementById('editAgTel').value.trim(),
+                tipo: document.getElementById('editAgTipo').value.trim(),
+                matricula: document.getElementById('editAgMat').value.trim(),
+                observacoes: document.getElementById('editAgObs').value.trim()
+            };
+            if (!body.aluno) return alert('Nome do aluno obrigatorio');
+            fetch('/api/agendamentos/' + id, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            }).then(r => r.json()).then(d => {
+                if (d.erro) return alert(d.erro);
+                bootstrap.Modal.getInstance(document.getElementById('modalEditAg')).hide();
+                carregarAgendamentos();
+            });
+        }
+
+        function excluirAg(id, aluno) {
+            if (!confirm('Excluir agendamento de "' + aluno + '"?')) return;
+            fetch('/api/agendamentos/' + id, {method: 'DELETE'})
+                .then(r => r.json()).then(() => carregarAgendamentos());
+        }
+
+        function carregarLista() {
+            fetch('/api/pedagogicos').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tabelaPedagogicos');
+                tbody.innerHTML = '';
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-3">Nenhum pedagogico cadastrado</td></tr>'; return; }
+                data.forEach(p => {
+                    tbody.innerHTML += `<tr>
+                        <td class="align-middle">${p.nome}</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-primary btn-sm py-0 px-2" onclick="editar(${p.id},'${p.nome.replace(/'/g,"\\'")}')">Editar</button>
+                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="excluir(${p.id},'${p.nome.replace(/'/g,"\\'")}')">Excluir</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+        }
+
+        function abrirCadastro() {
+            bootstrap.Modal.getInstance(document.getElementById('modalGerenciar')).hide();
+            new bootstrap.Modal(document.getElementById('modalNovoProf')).show();
+        }
+
+        function cadastrarProf() {
+            const nome = document.getElementById('novoProfNome').value.trim();
+            if (!nome) return alert('Digite um nome');
+            fetch('/api/pedagogicos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome})
+            }).then(r => r.json()).then(d => {
+                if (d.erro) return alert(d.erro);
+                document.getElementById('novoProfNome').value = '';
+                bootstrap.Modal.getInstance(document.getElementById('modalNovoProf')).hide();
+                new bootstrap.Modal(document.getElementById('modalGerenciar')).show();
+                carregarLista();
+            });
+        }
+
+        function editar(id, nome) {
+            document.getElementById('editarId').value = id;
+            document.getElementById('editarNome').value = nome;
+            document.getElementById('editarTitulo').textContent = 'Editar - ' + nome;
+            new bootstrap.Modal(document.getElementById('modalEditar')).show();
+        }
+
+        function salvarEdicao() {
+            const id = document.getElementById('editarId').value;
+            const nome = document.getElementById('editarNome').value.trim();
+            if (!nome) return alert('Digite um nome');
+            fetch('/api/pedagogicos/' + id, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome})
+            }).then(r => r.json()).then(d => {
+                if (d.erro) return alert(d.erro);
+                bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+                carregarLista();
+            });
+        }
+
+        function excluir(id, nome) {
+            if (!confirm('Excluir "' + nome + '" e todos os seus horarios/agendamentos?')) return;
+            fetch('/api/pedagogicos/' + id, {method: 'DELETE'})
+                .then(r => r.json()).then(() => carregarLista());
+        }
+
+        document.getElementById('modalGerenciar').addEventListener('show.bs.modal', carregarLista);
+        document.getElementById('modalEditar').addEventListener('shown.bs.modal', () => document.getElementById('editarNome').focus());
+        document.getElementById('modalAgendamentos').addEventListener('show.bs.modal', carregarAgendamentos);
+        document.getElementById('modalEditAg').addEventListener('shown.bs.modal', () => document.getElementById('editAgAluno').focus());
+    </script>
+</body>
+</html>
