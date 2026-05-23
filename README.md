@@ -1,203 +1,174 @@
-# Sistema de Agendamentos
+# Sistema de Agendamento
 
-## 📋 Visão Geral
+Sistema web completo para gerenciamento de agendamentos desenvolvido com Python/Flask. Permite que a central de atendimento agende horarios com colaboradores, que cada colaborador gerencie sua propria agenda, e que administradores tenham controle total sobre os dados.
 
-Sistema web completo para gerenciamento de agendamentos desenvolvido com Python/Flask. O projeto permite agendamento de serviços/consultas com suporte a múltiplos usuários (administradores, professores/pessoal técnico e alunos/usuários finais), controle de horários, recorrência de eventos e histórico de atendimentos.
+Inclui recursos de **Progressive Web App (PWA)**, permitindo instalacao em dispositivos moveis e desktop.
 
-Este sistema também implementa recursos de **Progressive Web App (PWA)**, permitindo instalação em dispositivos móveis e desktop para uso offline ou como aplicativo nativo.
+## Funcionalidades
 
-## 🚀 Funcionalidades Principais
+### Central de Atendimento
+- Agendamento de horarios com colaboradores
+- Selecao de data e horarios disponiveis em tempo real
+- Cadastro de dados do cliente (nome, CPF, telefone, observacoes)
+- Visualizacao e cancelamento de agendamentos
 
-- **Gestão de Usuários**: Administradores, professores/pessoal técnico
-- **Cadastro de Profissionais**: Registro de pedagogicos/profissionais disponíveis
-- **Gerenciamento de Horários**: Definição de disponibilidade com suporte a horários recorrentes
-- **Sistema de Agendamento**: Reserva de horários com verificação de disponibilidade em tempo real
-- **Controle de Status**: Agendamentos podem ser marcados como Atendido, Ausente ou Cancelado
-- **Histórico Completo**: Visualização de todos os agendamentos realizados
-- **Backup Automático**: Funcionalidade de backup manual do banco de dados
-- **Interface Responsiva**: Templates HTML com Bootstrap para excelente experiência em dispositivos móveis e desktop
-- **Progressive Web App (PWA)**: Instalável como aplicativo nativo com suporte offline
-- **Tema Escuro**: Interface com tema escuro personalizável
-- **Manifest e Service Worker**: Configuração completa para experiência PWA
+### Colaborador
+- Cadastro de horarios disponiveis (data unica ou recorrencia semanal)
+- Visualizacao em calendario dos dias com agendamentos
+- Controle de status dos atendimentos (Atendido, Ausente, Cancelado)
+- Notificacao de agendamentos pendentes
 
-## 🛠️ Tecnologias Utilizadas
+### Administracao
+- **Gerenciar Colaboradores**: Cadastrar, editar e excluir colaboradores
+- **Gerenciar Horarios**: Visualizar e excluir horarios de qualquer colaborador
+- **Gerenciar Agendamentos**: Filtrar por periodo, status e colaborador; editar ou excluir
+- **Dashboard**: Estatisticas com totais, agendamentos hoje, ultimos 7 dias, por status e por colaborador
+- **Historico**: Consulta de atendimentos concluidos
+- **Backup**: Exportacao manual do banco de dados
+- **Autenticacao**: Login protegido com credenciais alteraveis
+
+## Tecnologias
 
 - **Backend**: Python 3.x, Flask
-- **Frontend**: HTML5, CSS3, Bootstrap 5, JavaScript
+- **Frontend**: HTML5, Bootstrap 5, JavaScript
 - **Banco de Dados**: SQLite
-- **PWA**: Service Worker, Web Manifest, HTTPS (para produção)
-- **Outras Bibliotecas**: 
-  - `sqlite3` (padrão do Python)
-  - `shutil` (para funcionalidade de backup)
+- **PWA**: Service Worker, Web Manifest
 
-## 📁 Estrutura do Projeto
+## Estrutura
 
 ```
-agendamento/
-├── app.py                 # Aplicação principal Flask
-├── templates/             # Templates HTML
-│   ├── index.html         # Página de login/admin
-│   ├── landing.html       # Página inicial pública
-│   ├── acesso_central.html # Login da central
-│   ├── acesso_pedagogico.html # Login do professor
-│   ├── central.html       # Dashboard da central
-│   ├── pedagogico.html    # Interface do professor
-│   └── historico.html     # Página de histórico
-├── static/                # Arquivos estáticos
-│   ├── icon.svg           # Ícone do aplicativo
-│   ├── manifest.json      # Manifest do PWA
-│   ├── manifest-pedagogico.json # Manifest específico para professores
-│   ├── manifest-central.json # Manifest específico para central
-│   └── sw.js              # Service Worker para PWA
-├── .gitignore             # Arquivos ignorados pelo Git
-├── .gitattributes         # Configurações do Git
-├── ci.ps1                 # Script de integração contínua PowerShell
-└── README.md              # Este arquivo
+app_agendamento/
+├── app.py                        # Aplicacao principal Flask
+├── templates/
+│   ├── index.html                # Painel administrativo
+│   ├── login_admin.html          # Login do admin
+│   ├── landing.html              # Pagina inicial
+│   ├── acesso_atendimento.html   # Login da central de atendimento
+│   ├── acesso_colaborador.html   # Login do colaborador
+│   ├── atendimento.html          # Central de atendimento
+│   ├── colaborador.html          # Painel do colaborador
+│   └── historico.html            # Historico de atendimentos
+├── static/
+│   ├── icon.svg
+│   ├── manifest.json
+│   ├── manifest-colaborador.json
+│   ├── manifest-central.json
+│   └── sw.js
+├── .agenda.db                    # Banco de dados (criado automaticamente)
+├── .gitignore
+└── README.md
 ```
 
-## ⚙️ Instalação e Configuração
+## Instalacao
 
-### Pré-requisitos
-
+### Pre-requisitos
 - Python 3.6 ou superior
-- pip (gerenciador de pacotes do Python)
+- pip
 
-### Passo a Passo
+### Passos
 
-1. **Clone o repositório** (se aplicável):
+1. Clone o repositorio:
    ```bash
-   git clone [URL-do-repositório]
-   cd agendamento
+   git clone <url>
+   cd app_agendamento
    ```
 
-2. **Crie um ambiente virtual** (recomendado):
+2. Crie um ambiente virtual (recomendado):
    ```bash
    python -m venv venv
-   # No Windows:
+   # Windows:
    venv\Scripts\activate
-   # No Linux/Mac:
+   # Linux/Mac:
    source venv/bin/activate
    ```
 
-3. **Instale as dependências**:
+3. Instale as dependencias:
    ```bash
    pip install flask
    ```
 
-4. **Inicialize o banco de dados**:
-   O banco de dados SQLite será criado automaticamente na primeira execução.
-
-5. **Execute a aplicação**:
+4. Execute:
    ```bash
    python app.py
    ```
 
-6. **Acesse no navegador**:
-   - URL principal: `http://localhost:5000`
-   - Painel administrativo: `http://localhost:5000/admin`
+5. Acesse no navegador:
+   - Pagina inicial: `http://localhost:5000`
+   - Painel admin: `http://localhost:5000/admin`
 
-7. **Instale como PWA** (opcional):
-   - No navegador Chrome/Edge: Clique no ícone de instalação na barra de endereços
-   - No Firefox: Use o menu > Mais ferramentas > Criar atalho...
-   - Em dispositivos móveis: Use o menu do navegador > "Instalar aplicativo"
+> O banco de dados SQLite e criado automaticamente na primeira execucao.
 
-## 🔧 Variáveis de Ambiente
+## Credenciais Padrao
 
-- `AGENDA_DB`: Define o caminho personalizado para o arquivo do banco de dados SQLite
-  ```bash
-  set AGENDA_DB=C:\caminho\para\seu\banco.db  # Windows
-  export AGENDA_DB=/caminho/para/seu/banco.db  # Linux/Mac
-  ```
+| Acesso | Local | Credencial |
+|---|---|---|
+| Admin | `/admin` | `admin` / `admin` |
+| Central | `/inicio_atendimento` | Acesso livre (1 clique) |
+| Colaborador | `/inicio_colaborador` | Selecao do nome |
 
-Se não definida, o banco será criado como `.agenda.db` no diretório do projeto.
+As credenciais de admin podem ser alteradas no proprio painel em "Alterar credenciais".
 
-## 📖 Uso
+## Uso
 
-### Para Administradores/Central
+### Admin
+1. Acesse `/admin` e faca login com `admin` / `admin`
+2. Gerencie colaboradores, horarios e agendamentos
+3. Consulte estatisticas no Dashboard
+4. Faca backup do banco de dados
+5. Altere as credenciais de acesso pelo link no canto superior direito
 
-1. Acesse `http://localhost:5000/admin`
-2. Faça login usando as opções disponíveis (pode ser configurado conforme necessário)
-3. Gerencie professores/pessoal técnico através da interface
-4. Visualize e controle todos os agendamentos
-5. Acesse o histórico de atendimentos
-6. Instale como PWA para acesso rápido na área de trabalho
+### Central de Atendimento
+1. Acesse a pagina inicial e clique em "Atendimento"
+2. Selecione o colaborador e a data desejada
+3. Escolha o horario disponivel e preencha os dados do cliente
 
-### Para Professores/Pessoal Técnico
+### Colaborador
+1. Acesse a pagina inicial e clique em "Colaborador"
+2. Selecione seu nome ou cadastre-se como novo
+3. Adicione seus horarios disponiveis (data unica ou semanal)
+4. Acompanhe os agendamentos no calendario
+5. Marque atendimentos como Atendido, Ausente ou Cancelado
 
-1. Acesse `http://localhost:5000/login/pedagogico`
-2. Faça login com seu nome cadastrado
-3. Visualize seus horários disponíveis
-4. Gerencie seus próprios agendamentos
-5. Atualize o status dos atendimentos (Atendido, Ausente, Cancelado)
-6. Use o aplicativo instalado para acesso rápido aos seus horários
+## Banco de Dados
 
-### Para Usuários Finais (Alunos/Clientes)
+Tabelas principais:
 
-1. Acesse a página inicial `http://localhost:5000`
-2. Visualize informações gerais sobre o serviço
-3. Redirecionado para o login apropriado conforme seu tipo de usuário
-4. Instale como PWA para facilitar futuros acessos
+- **config** — Armazena credenciais do admin (usuario e senha com hash SHA-256)
+- **colaborador** — Dados dos colaboradores
+- **horarios** — Disponibilidade de horarios (com suporte a recorrencia semanal)
+- **agendamentos** — Registro de todos os agendamentos realizados
 
-## 🗄️ Banco de Dados
+Variavel de ambiente `AGENDA_DB` permite definir caminho personalizado para o arquivo `.db`.
 
-O sistema utiliza SQLite com as seguintes tabelas principais:
+## API
 
-- **pedagogicos**: Armazena informações dos professores/pessoal técnico
-- **horarios**: Define a disponibilidade de horários (com suporte a recorrência)
-- **agendamentos**: Registra todos os agendamentos feitos
+### Endpoints principais
 
-O arquivo do banco de dados é criado automaticamente como `.agenda.db` no diretório raiz do projeto (ou conforme definido pela variável de ambiente `AGENDA_DB`).
+| Metodo | Rota | Descricao |
+|---|---|---|
+| GET | `/api/colaborador` | Lista colaboradores |
+| POST | `/api/colaborador` | Cria colaborador |
+| PATCH | `/api/colaborador/<id>` | Renomeia colaborador |
+| DELETE | `/api/colaborador/<id>` | Exclui colaborador e dados relacionados |
+| GET | `/api/horarios/<id>` | Lista horarios de um colaborador |
+| POST | `/api/horarios` | Cria horario |
+| DELETE | `/api/horarios/<id>` | Exclui horario |
+| GET | `/api/slots` | Retorna horarios disponiveis |
+| GET | `/api/agendamentos` | Lista agendamentos (com filtros) |
+| POST | `/api/agendamentos` | Cria agendamento |
+| PATCH | `/api/agendamentos/<id>` | Edita agendamento |
+| PATCH | `/api/agendamentos/<id>/status` | Atualiza status |
+| DELETE | `/api/agendamentos/<id>` | Exclui agendamento |
+| GET | `/api/stats` | Estatisticas do sistema |
+| POST | `/api/backup` | Gera backup do banco |
+| POST | `/api/admin/change-credentials` | Altera credenciais do admin |
 
-## 🔒 Segurança
+## PWA
 
-- Sessões Flask com chave secreta definida
-- Validação de dados nos endpoints da API
-- Proteção contra inserções duplicadas (professores com mesmo nome)
-- Verificação de disponibilidade de horários antes do agendamento
-- Sanitização básica de entradas de texto
-- Headers de segurança básicos implementados
+O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
+- Chrome/Edge: clique no icone de instalacao na barra de enderecos
+- Dispositivos moveis: menu do navegador > "Instalar aplicativo"
 
-## 📱 Responsividade e PWA
+## Licenca
 
-A interface é totalmente responsiva, adaptando-se a diferentes tamanhos de tela:
-- Desktop: Layout completo com navegação lateral
-- Tablet: Menu adaptável e otimização de espaço
-- Mobile: Visualização em coluna única com menus hamburger
-
-**Recursos PWA incluem:**
-- ✅ Instalável como aplicativo nativo
-- ✅ Funcionamento offline limitado (páginas básicas)
-- ✅ Ícones adaptáveis para diferentes resoluções
-- ✅ Tema de cor personalizado (#00a859 - verde esmeralda)
-- ✅ Modo standalone (sem barra de endereços do navegador)
-- ✅ Service Worker para cache de assets essenciais
-
-## 🤝 Contribuindo
-
-1. Faça um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 📞 Suporte
-
-Para questões, sugestões ou relatos de problemas, por favor abra uma issue neste repositório.
-
-## 🙏 Agradecimentos
-
-- Comunidade Flask por fornecer um excelente framework web
-- Equipe do Bootstrap pelos componentes UI responsivos
-- Comunidade PWA pelos padrões e melhores práticas
-- Todos os contribuidores que ajudaram a melhorar este projeto
-
----
-
-**Versão**: v1.0  
-**Última atualização**: Maio 2026  
-**Desenvolvido com**: Python & Flask  
-**Recursos PWA**: Service Worker, Web Manifest, Design Responsivo
+MIT — veja o arquivo [LICENSE](LICENSE).
