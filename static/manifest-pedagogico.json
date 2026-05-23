@@ -1,7 +1,7 @@
 {
-  "name": "Pedagogico",
-  "short_name": "Pedagogico",
-  "start_url": "/inicio_pedagogico",
+  "name": "Agenda do colaborador",
+  "short_name": "colaborador",
+  "start_url": "/inicio_colaborador",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",

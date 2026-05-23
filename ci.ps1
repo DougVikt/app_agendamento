@@ -31,23 +31,23 @@ Write-Host "[3/4] Running API tests..." -ForegroundColor Yellow
 $failed = 0
 $tests = @()
 
-# 3a: Create pedagogico
+# 3a: Create colaborador
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/pedagogicos" -Method POST -ContentType "application/json" -Body '{"nome":"Teste CI"}' -UseBasicParsing
-    if ($r.StatusCode -eq 201) { $tests += "Criar pedagogico: OK" } else { $tests += "Criar pedagogico: FAIL ($($r.StatusCode))"; $failed++ }
-} catch { $tests += "Criar pedagogico: FAIL ($_)"; $failed++ }
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/colaborador" -Method POST -ContentType "application/json" -Body '{"nome":"Teste CI"}' -UseBasicParsing
+    if ($r.StatusCode -eq 201) { $tests += "Criar colaborador: OK" } else { $tests += "Criar colaborador: FAIL ($($r.StatusCode))"; $failed++ }
+} catch { $tests += "Criar colaborador: FAIL ($_)"; $failed++ }
 
 # 3b: Create fixed horario
 $data = (Get-Date).AddDays(7).ToString("yyyy-MM-dd")
 try {
-    $body = '{"pedagogico_id":1,"data":"' + $data + '","hora_inicio":"08:00","hora_fim":"12:00","intervalo":30}'
+    $body = '{"colaborador_id":1,"data":"' + $data + '","hora_inicio":"08:00","hora_fim":"12:00","intervalo":30}'
     $r = Invoke-WebRequest "http://127.0.0.1:5000/api/horarios" -Method POST -ContentType "application/json" -Body $body -UseBasicParsing
     if ($r.StatusCode -eq 201) { $tests += "Criar horario fixo: OK" } else { $tests += "Criar horario fixo: FAIL ($($r.StatusCode))"; $failed++ }
 } catch { $tests += "Criar horario fixo: FAIL ($_)"; $failed++ }
 
 # 3c: Create recurring horario
 try {
-    $body = '{"pedagogico_id":1,"data":"","hora_inicio":"14:00","hora_fim":"17:00","intervalo":60,"recorrente":1,"dia_semana":2}'
+    $body = '{"colaborador_id":1,"data":"","hora_inicio":"14:00","hora_fim":"17:00","intervalo":60,"recorrente":1,"dia_semana":2}'
     $r = Invoke-WebRequest "http://127.0.0.1:5000/api/horarios" -Method POST -ContentType "application/json" -Body $body -UseBasicParsing
     if ($r.StatusCode -eq 201) { $tests += "Criar horario recorrente: OK" } else { $tests += "Criar horario recorrente: FAIL ($($r.StatusCode))"; $failed++ }
 } catch { $tests += "Criar horario recorrente: FAIL ($_)"; $failed++ }
@@ -60,7 +60,7 @@ try {
 } catch { $tests += "Listar datas: FAIL ($_)"; $failed++ }
 
 # 3e: Create agendamento with telefone + observacoes
-$telObsBody = '{"pedagogico_id":1,"data":"' + $data + '","hora_inicio":"08:00","tipo":"Reforco","aluno":"Teste","matricula":"123","telefone":"1199999","observacoes":"Obs de teste"}'
+$telObsBody = '{"colaborador_id":1,"data":"' + $data + '","hora_inicio":"08:00","tipo":"Reforco","cliente":"Teste","cpf":"123","telefone":"1199999","observacoes":"Obs de teste"}'
 try {
     $r = Invoke-WebRequest "http://127.0.0.1:5000/api/agendamentos" -Method POST -ContentType "application/json" -Body $telObsBody -UseBasicParsing
     if ($r.StatusCode -eq 201) { $tests += "Agendar c/ telefone+obs: OK" } else { $tests += "Agendar c/ telefone+obs: FAIL ($($r.StatusCode))"; $failed++ }
@@ -72,22 +72,22 @@ try {
     if ($r.StatusCode -eq 200) { $tests += "Cancelar agendamento: OK" } else { $tests += "Cancelar agendamento: FAIL ($($r.StatusCode))"; $failed++ }
 } catch { $tests += "Cancelar agendamento: FAIL ($_)"; $failed++ }
 
-# 3g: Rename pedagogico
+# 3g: Rename colaborador
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/pedagogicos/1" -Method PATCH -ContentType "application/json" -Body '{"nome":"Teste CI Editado"}' -UseBasicParsing
-    if ($r.StatusCode -eq 200) { $tests += "Renomear pedagogico: OK" } else { $tests += "Renomear pedagogico: FAIL ($($r.StatusCode))"; $failed++ }
-} catch { $tests += "Renomear pedagogico: FAIL ($_)"; $failed++ }
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/colaborador/1" -Method PATCH -ContentType "application/json" -Body '{"nome":"Teste CI Editado"}' -UseBasicParsing
+    if ($r.StatusCode -eq 200) { $tests += "Renomear colaborador: OK" } else { $tests += "Renomear colaborador: FAIL ($($r.StatusCode))"; $failed++ }
+} catch { $tests += "Renomear colaborador: FAIL ($_)"; $failed++ }
 
 # 3h: Login endpoints
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/inicio_central" -Method POST -UseBasicParsing -MaximumRedirection 0
-    if ($r.StatusCode -eq 302) { $tests += "Login Central: OK" } else { $tests += "Login Central: FAIL ($($r.StatusCode))"; $failed++ }
-} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Login Central: OK" } else { $tests += "Login Central: FAIL"; $failed++ } }
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/inicio_atendimento" -Method POST -UseBasicParsing -MaximumRedirection 0
+    if ($r.StatusCode -eq 302) { $tests += "Login atendimento: OK" } else { $tests += "Login atendimento: FAIL ($($r.StatusCode))"; $failed++ }
+} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Login atendimento: OK" } else { $tests += "Login atendimento: FAIL"; $failed++ } }
 
 try {
-    $r = Invoke-WebRequest "http://127.0.0.1:5000/inicio_pedagogico" -Method POST -Body "nome=Teste CI" -UseBasicParsing -MaximumRedirection 0
-    if ($r.StatusCode -eq 302) { $tests += "Login Pedagogico: OK" } else { $tests += "Login Pedagogico: FAIL ($($r.StatusCode))"; $failed++ }
-} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Login Pedagogico: OK" } else { $tests += "Login Pedagogico: FAIL"; $failed++ } }
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/inicio_colaborador" -Method POST -Body "nome=Teste CI" -UseBasicParsing -MaximumRedirection 0
+    if ($r.StatusCode -eq 302) { $tests += "Login colaborador: OK" } else { $tests += "Login colaborador: FAIL ($($r.StatusCode))"; $failed++ }
+} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Login colaborador: OK" } else { $tests += "Login colaborador: FAIL"; $failed++ } }
 
 # 3i: Page rendering
 try {
@@ -106,6 +106,41 @@ try {
     $r = Invoke-WebRequest "http://127.0.0.1:5000/historico" -UseBasicParsing
     if ($r.StatusCode -eq 200) { $tests += "Pagina historico: OK" } else { $tests += "Pagina historico: FAIL"; $failed++ }
 } catch { $tests += "Pagina historico: FAIL ($_)"; $failed++ }
+
+# 3j: Admin login
+try {
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/admin/login" -Method POST -Body "usuario=admin&senha=admin" -UseBasicParsing -MaximumRedirection 0
+    $cookies = $r.Headers['Set-Cookie']
+    if ($r.StatusCode -eq 302 -and $cookies) { $tests += "Admin login: OK" } else { $tests += "Admin login: FAIL ($($r.StatusCode))"; $failed++ }
+} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Admin login: OK" } else { $tests += "Admin login: FAIL"; $failed++ } }
+
+# 3k: Admin logout
+try {
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/admin/logout" -UseBasicParsing -MaximumRedirection 0
+    if ($r.StatusCode -eq 302) { $tests += "Admin logout: OK" } else { $tests += "Admin logout: FAIL ($($r.StatusCode))"; $failed++ }
+} catch { if ($_.Exception.Response.StatusCode -eq 302) { $tests += "Admin logout: OK" } else { $tests += "Admin logout: FAIL"; $failed++ } }
+
+# 3l: Stats API
+try {
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/stats" -UseBasicParsing
+    $j = $r.Content | ConvertFrom-Json
+    if ($j.total -ge 0 -and $j.por_status -ne $null) { $tests += "API stats: OK" } else { $tests += "API stats: FAIL (resposta invalida)"; $failed++ }
+} catch { $tests += "API stats: FAIL ($_)"; $failed++ }
+
+# 3m: Backup API
+try {
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/backup" -Method POST -UseBasicParsing
+    $j = $r.Content | ConvertFrom-Json
+    if ($j.ok -eq $true) { $tests += "API backup: OK" } else { $tests += "API backup: FAIL"; $failed++ }
+} catch { $tests += "API backup: FAIL ($_)"; $failed++ }
+
+# 3n: Change credentials (first login to get session cookie)
+try {
+    $session = Invoke-WebRequest "http://127.0.0.1:5000/admin/login" -Method POST -Body "usuario=admin&senha=admin" -UseBasicParsing -SessionVariable sess
+    $r = Invoke-WebRequest "http://127.0.0.1:5000/api/admin/change-credentials" -Method POST -ContentType "application/json" -Body '{"usuario_atual":"admin","senha_atual":"admin","novo_usuario":"admin","nova_senha":"admin"}' -WebSession $sess -UseBasicParsing
+    $j = $r.Content | ConvertFrom-Json
+    if ($j.ok -eq $true) { $tests += "API change-credentials: OK" } else { $tests += "API change-credentials: FAIL"; $failed++ }
+} catch { $tests += "API change-credentials: FAIL ($_)"; $failed++ }
 
 # Print results
 Write-Host "`n[4/4] Results:" -ForegroundColor Yellow

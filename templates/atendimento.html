@@ -16,18 +16,18 @@
         .navbar { background-color: #008f4a !important; }
     </style>
 </head>
-<body class="bg-body-tertiary">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
     <nav class="navbar navbar-dark mb-4">
         <div class="container">
             <span class="navbar-brand mb-0 h1">Central de Atendimento</span>
             <div>
                 <a href="/historico" class="btn btn-outline-light btn-sm me-2">Historico</a>
-                <a href="/inicio_central" class="btn btn-outline-light btn-sm">Sair</a>
+                <a href="/inicio_atendimento" class="btn btn-outline-light btn-sm">Sair</a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container flex-grow-1">
         <div id="alertBox" class="alert alert-warning d-none shadow" role="alert">
             <strong>Atencao!</strong> <span id="alertMsg"></span>
         </div>
@@ -37,7 +37,7 @@
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-5">
-                        <label class="form-label">Pedagogico</label>
+                        <label class="form-label">colaborador</label>
                         <select id="filtroPed" class="form-select" onchange="onPedChange()">
                             <option value="">Selecione...</option>
                         </select>
@@ -64,7 +64,7 @@
                         <span id="qtdSlots" class="badge bg-success">0</span>
                     </div>
                     <div class="card-body p-0" id="slotsContainer">
-                        <div class="text-center text-muted py-5">Selecione pedagogico e data</div>
+                        <div class="text-center text-muted py-5">Selecione colaborador e data</div>
                     </div>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                         <table class="table table-sm table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Aluno</th><th>Tel.</th><th>Tipo</th><th>Ped.</th><th>Data</th><th>Hora</th><th></th>
+                                    <th>cliente</th><th>Tel.</th><th>Tipo</th><th>Ped.</th><th>Data</th><th>Hora</th><th></th>
                                 </tr>
                             </thead>
                             <tbody id="tabelaAgendados"></tbody>
@@ -105,20 +105,20 @@
                         <input type="text" id="campoTipo" class="form-control" placeholder="Ex: Apoio, Reforco, Exame">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nome do Aluno</label>
-                        <input type="text" id="alunoNome" class="form-control" placeholder="Digite o nome">
+                        <label class="form-label">Nome do Cliente</label>
+                        <input type="text" id="clienteNome" class="form-control" placeholder="Digite o nome">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Matricula</label>
-                        <input type="text" id="alunoMatricula" class="form-control" placeholder="Digite a matricula">
+                        <label class="form-label">CPF</label>
+                        <input type="text" id="clienteCPF" class="form-control" placeholder="Digite a CPF">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Telefone</label>
-                        <input type="text" id="alunoTelefone" class="form-control" placeholder="(11) 99999-8888">
+                        <input type="text" id="clienteTelefone" class="form-control" placeholder="(11) 99999-8888">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Observacoes <small class="text-muted">(opcional)</small></label>
-                        <textarea id="alunoObs" class="form-control" rows="2" placeholder="Observacoes sobre o atendimento"></textarea>
+                        <textarea id="clienteObs" class="form-control" rows="2" placeholder="Observacoes sobre o atendimento"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -139,7 +139,7 @@
         </div>
     </div>
 
-    <div class="text-center text-muted small py-3">{{ versao }}</div>
+    <footer class="text-center text-muted small py-2 mt-auto border-top bg-body-secondary">{{ versao }}</footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
@@ -148,13 +148,13 @@
 
         const modal = new bootstrap.Modal(document.getElementById('modalConfirmar'));
         let slotSelecionado = null;
-        let pedagogicosCache = {};
+        let colaboradorCache = {};
 
-        function carregarPedagogicos() {
-            fetch('/api/pedagogicos').then(r => r.json()).then(data => {
+        function carregarcolaborador() {
+            fetch('/api/colaborador').then(r => r.json()).then(data => {
                 const sel = document.getElementById('filtroPed');
                 sel.innerHTML = '<option value="">Selecione...</option>';
-                data.forEach(p => { pedagogicosCache[p.id] = p.nome;
+                data.forEach(p => { colaboradorCache[p.id] = p.nome;
                     sel.innerHTML += `<option value="${p.id}">${p.nome}</option>`; });
             });
         }
@@ -163,7 +163,7 @@
             const pid = document.getElementById('filtroPed').value;
             const sd = document.getElementById('filtroData');
             sd.innerHTML = '<option value="">Selecione...</option>'; sd.disabled = true;
-            document.getElementById('slotsContainer').innerHTML = '<div class="text-center text-muted py-5">Selecione pedagogico e data</div>';
+            document.getElementById('slotsContainer').innerHTML = '<div class="text-center text-muted py-5">Selecione colaborador e data</div>';
             document.getElementById('qtdSlots').textContent = '0';
             if (!pid) return;
             fetch('/api/datas/' + pid).then(r => r.json()).then(d => {
@@ -176,7 +176,7 @@
             const pid = document.getElementById('filtroPed').value;
             const data = document.getElementById('filtroData').value;
             if (!pid || !data) return;
-            fetch(`/api/slots?pedagogico_id=${pid}&data=${data}`)
+            fetch(`/api/slots?colaborador_id=${pid}&data=${data}`)
                 .then(r => r.json()).then(slots => {
                 const c = document.getElementById('slotsContainer');
                 const q = document.getElementById('qtdSlots');
@@ -192,26 +192,26 @@
             const pid = document.getElementById('filtroPed').value;
             const data = document.getElementById('filtroData').value;
             document.getElementById('confirmInfo').innerHTML =
-                `<strong>Pedagogico:</strong> ${pedagogicosCache[pid]}<br><strong>Data:</strong> ${fmtD(data)}<br><strong>Horario:</strong> ${hora}`;
+                `<strong>colaborador:</strong> ${colaboradorCache[pid]}<br><strong>Data:</strong> ${fmtD(data)}<br><strong>Horario:</strong> ${hora}`;
             document.getElementById('campoTipo').value = '';
-            document.getElementById('alunoNome').value = '';
-            document.getElementById('alunoMatricula').value = '';
-            document.getElementById('alunoTelefone').value = '';
-            document.getElementById('alunoObs').value = '';
-            slotSelecionado = { pedagogico_id: parseInt(pid), data, hora_inicio: hora };
+            document.getElementById('clienteNome').value = '';
+            document.getElementById('clienteCPF').value = '';
+            document.getElementById('clienteTelefone').value = '';
+            document.getElementById('clienteObs').value = '';
+            slotSelecionado = { colaborador_id: parseInt(pid), data, hora_inicio: hora };
             modal.show();
         }
 
         function confirmarAgendamento() {
             const tipo = document.getElementById('campoTipo').value.trim();
-            const aluno = document.getElementById('alunoNome').value.trim();
-            const matricula = document.getElementById('alunoMatricula').value.trim();
-            const telefone = document.getElementById('alunoTelefone').value.trim();
-            const observacoes = document.getElementById('alunoObs').value.trim();
+            const cliente = document.getElementById('clienteNome').value.trim();
+            const CPF = document.getElementById('clienteCPF').value.trim();
+            const telefone = document.getElementById('clienteTelefone').value.trim();
+            const observacoes = document.getElementById('clienteObs').value.trim();
             if (!tipo) return alert('Digite o tipo de atendimento');
-            if (!aluno) return alert('Digite o nome do aluno');
+            if (!cliente) return alert('Digite o nome do cliente');
             fetch('/api/agendamentos', { method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({...slotSelecionado, tipo, aluno, matricula, telefone, observacoes}) })
+                body: JSON.stringify({...slotSelecionado, tipo, cliente, CPF, telefone, observacoes}) })
                 .then(r => r.json()).then(d => {
                 if (d.erro) return alert(d.erro);
                 modal.hide(); onDataChange(); carregarAgendamentos(); carregarAlertas();
@@ -224,7 +224,7 @@
                 if (!data.length) { box.classList.add('d-none'); return; }
                 box.classList.remove('d-none');
                 msg.innerHTML = `${data.length} pendente(s)! ` +
-                    data.map(a => `<br><small>${a.aluno} - ${a.pedagogico_nome} - ${fmtD(a.data)} ${a.hora_inicio}</small>`).join('');
+                    data.map(a => `<br><small>${a.cliente} - ${a.colaborador_nome} - ${fmtD(a.data)} ${a.hora_inicio}</small>`).join('');
             });
         }
 
@@ -236,10 +236,10 @@
                 data.slice(0, 100).forEach(a => {
                     const podeCancelar = a.status === 'Agendado';
                     tbody.innerHTML += `<tr>
-                        <td class="small">${a.aluno}${a.observacoes ? ` <span class="text-muted" style="cursor:pointer" onclick="verObs(this)" data-obs="${encodeURIComponent(a.observacoes)}">&#9998;</span>` : ''}</td>
+                        <td class="small">${a.cliente}${a.observacoes ? ` <span class="text-muted" style="cursor:pointer" onclick="verObs(this)" data-obs="${encodeURIComponent(a.observacoes)}">&#9998;</span>` : ''}</td>
                         <td class="small">${a.telefone || ''}</td>
                         <td class="small">${a.tipo}</td>
-                        <td class="small">${a.pedagogico_nome}</td>
+                        <td class="small">${a.colaborador_nome}</td>
                         <td class="small">${fmtD(a.data)}</td>
                         <td class="small">${a.hora_inicio}</td>
                         <td class="small text-nowrap">${podeCancelar ? `<button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="cancelarAgendamento(${a.id})">Cancelar</button>` : `<span class="badge ${a.status==='Atendido'?'bg-success':a.status==='Cancelado'?'bg-secondary':'bg-warning text-dark'}">${a.status}</span>`}</td>
@@ -263,11 +263,11 @@
             document.getElementById('filtroPed').value = '';
             document.getElementById('filtroData').innerHTML = '<option value="">Selecione...</option>';
             document.getElementById('filtroData').disabled = true;
-            document.getElementById('slotsContainer').innerHTML = '<div class="text-center text-muted py-5">Selecione pedagogico e data</div>';
+            document.getElementById('slotsContainer').innerHTML = '<div class="text-center text-muted py-5">Selecione colaborador e data</div>';
             document.getElementById('qtdSlots').textContent = '0';
         }
 
-        carregarPedagogicos(); carregarAgendamentos(); carregarAlertas();
+        carregarcolaborador(); carregarAgendamentos(); carregarAlertas();
         setInterval(() => {
             if (document.getElementById('filtroData').value) onDataChange();
             carregarAgendamentos(); carregarAlertas();
