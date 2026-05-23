@@ -16,20 +16,26 @@
         .logo { font-size: 3rem; font-weight: 700; color: #00a859; }
     </style>
 </head>
-<body class="d-flex align-items-center min-vh-100 bg-body-tertiary">
-    <div class="container text-center" style="max-width: 600px;">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+    <div class="container text-center flex-grow-1 d-flex flex-column justify-content-center" style="max-width: 600px;">
         <div class="logo mb-2">&#9776;</div>
         <h1 class="display-5 fw-bold mb-2">Sistema de Agendamento</h1>
-        <p class="text-muted mb-4">{{ versao }}</p>
         <p class="lead mb-4">
             Bem-vindo ao sistema de agendamento de atendimentos.
-            Esta ferramenta permite que a Central de Atendimento agende horarios
-            com o Pedagogico, e que cada colaborador do pedagogico gerencie sua propria agenda.
+            Esta ferramenta permite que a central de atendimento agende horarios
+            com o colaborador, e que cada colaborador gerencie sua propria agenda.
         </p>
-        <p class="text-muted mb-4">
+        <a href="/inicio_atendimento" class="text-decoration-none text-light">
+            <button type="button" class="btn btn-primary w-100 py-2 my-1 fs-3">Atendimento</button>
+        </a>
+        <a href="/inicio_colaborador" class="text-decoration-none text-light">
+            <button type="button" class="btn btn-primary w-100 py-2 my-1 fs-3">Colaborador</button>
+        </a>
+        <!-- <p class="text-muted mb-4">
             <em>Chame o gerenciador do aplicativo para fazer a configuracao adequada para seu setor.</em>
-        </p>
+        </p> -->
     </div>
+    <footer class="text-center text-muted small py-2 mt-auto border-top bg-body-secondary">{{ versao }}</footer>
     <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

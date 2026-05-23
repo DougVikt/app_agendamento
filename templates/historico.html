@@ -14,15 +14,17 @@
         .navbar { background-color: #008f4a !important; }
     </style>
 </head>
-<body class="bg-body-tertiary">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
     <nav class="navbar navbar-dark mb-4">
         <div class="container">
             <span class="navbar-brand mb-0 h1">Historico de Atendimentos</span>
             <div>
-                {% if role == 'central' %}
-                    <a href="/central" class="btn btn-outline-light btn-sm">Voltar</a>
-                {% elif role == 'pedagogico' %}
-                    <a href="/pedagogico" class="btn btn-outline-light btn-sm">Voltar</a>
+                {% if role == 'atendimento' %}
+                    <a href="/atendimento" class="btn btn-outline-light btn-sm">Voltar</a>
+                {% elif role == 'colaborador' %}
+                    <a href="/colaborador" class="btn btn-outline-light btn-sm">Voltar</a>
+                {% elif role == 'admin' %}
+                    <a href="/admin" class="btn btn-outline-light btn-sm">Voltar</a>
                 {% else %}
                     <a href="/" class="btn btn-outline-light btn-sm">Voltar</a>
                 {% endif %}
@@ -30,7 +32,7 @@
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container flex-grow-1">
         <div class="card shadow">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Atendimentos Concluidos</h5>
@@ -41,7 +43,7 @@
                     <table class="table table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>Aluno</th><th>Matricula</th><th>Pedagogico</th><th>Tipo</th><th>Data</th><th>Hora</th><th>Status</th>
+                                <th>cliente</th><th>CPF</th><th>colaborador</th><th>Tipo</th><th>Data</th><th>Hora</th><th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaHistorico"></tbody>
@@ -51,7 +53,7 @@
         </div>
     </div>
 
-    <div class="text-center text-muted small py-3">{{ versao }}</div>
+    <footer class="text-center text-muted small py-2 mt-auto border-top bg-body-secondary">{{ versao }}</footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
@@ -67,9 +69,9 @@
                 }
                 data.forEach(a => {
                     tbody.innerHTML += `<tr>
-                        <td>${a.aluno}</td>
-                        <td>${a.matricula}</td>
-                        <td>${a.pedagogico_nome}</td>
+                        <td>${a.cliente}</td>
+                        <td>${a.CPF}</td>
+                        <td>${a.colaborador_nome}</td>
                         <td>${a.tipo}</td>
                         <td>${fmtD(a.data)}</td>
                         <td>${a.hora_inicio}</td>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sistema de Agendamento</title>
+    <title>Administracao - Sistema de Agendamento</title>
     <link rel="manifest" href="/static/manifest.json">
     <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,30 +19,49 @@
         .btn-outline-danger:hover { --bs-btn-hover-bg: #dc3545; --bs-btn-hover-border-color: #dc3545; }
     </style>
 </head>
-<body class="d-flex align-items-center min-vh-100 bg-body-tertiary">
-    <div class="container" style="max-width: 500px;">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+    <nav class="navbar navbar-dark bg-dark px-3">
+        <span class="navbar-brand mb-0 h6">Administracao</span>
+        <div>
+            <a href="#" class="text-light text-decoration-none small me-3" data-bs-toggle="modal" data-bs-target="#modalCredenciais">Alterar credenciais</a>
+            <a href="/admin/logout" class="btn btn-outline-light btn-sm">Sair</a>
+        </div>
+    </nav>
+    <div class="container d-flex align-items-center flex-grow-1" style="max-width: 600px;">
         <div class="card shadow">
             <div class="card-body p-4 text-center">
-                <h3 class="mb-3">Sistema de Agendamento</h3>
-                <p class="text-muted mb-4">Escolha seu perfil</p>
+                <h3 class="mb-3">Administracao</h3>
+                <p class="text-muted mb-4">Gerenciamento de dados do sistema</p>
 
-                <a href="/inicio_central" class="btn btn-outline-primary w-100 mb-3 py-3">
-                    Central de Atendimento
-                    <small class="d-block text-muted">Fazer agendamentos</small>
+                <button class="btn btn-outline-primary w-100 mb-3 py-3" data-bs-toggle="modal" data-bs-target="#modalGerenciar">
+                    Gerenciar Colaboradores
+                    <small class="d-block text-muted">Cadastrar, editar ou excluir colaboradores</small>
+                </button>
+
+                <button class="btn btn-outline-info w-100 mb-3 py-3" data-bs-toggle="modal" data-bs-target="#modalHorarios">
+                    Gerenciar Horarios
+                    <small class="d-block text-muted">Visualizar e excluir horarios dos colaboradores</small>
+                </button>
+
+                <button class="btn btn-outline-success w-100 mb-3 py-3" data-bs-toggle="modal" data-bs-target="#modalAgendamentos" onclick="carregarFiltros()">
+                    Gerenciar Agendamentos
+                    <small class="d-block text-muted">Filtrar, visualizar, editar ou excluir agendamentos</small>
+                </button>
+
+                <a href="/historico" class="btn btn-outline-secondary w-100 mb-3 py-3">
+                    Historico
+                    <small class="d-block text-muted">Consultar historico de atendimentos</small>
                 </a>
 
-                <a href="/inicio_pedagogico" class="btn btn-outline-success w-100 py-3 mb-3">
-                    Pedagógico
-                    <small class="d-block text-muted">Gerenciar meus horarios</small>
-                </a>
+                <button class="btn btn-outline-warning w-100 mb-3 py-3" data-bs-toggle="modal" data-bs-target="#modalDashboard" onclick="carregarDashboard()">
+                    Dashboard
+                    <small class="d-block text-muted">Estatisticas do sistema</small>
+                </button>
 
-                <p class="text-muted small mt-3">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalGerenciar">Gerenciar pedagogicos</a>
-                    &nbsp;|&nbsp;
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalAgendamentos">Gerenciar agendamentos</a>
-                    &nbsp;|&nbsp;
-                    <a href="/historico">Historico</a>
-                </p>
+                <button class="btn btn-outline-danger w-100 py-3" onclick="fazerBackup()">
+                    Fazer Backup
+                    <small class="d-block text-muted">Baixar copia do banco de dados</small>
+                </button>
             </div>
         </div>
     </div>
@@ -51,7 +70,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5>Gerenciar Pedagogicos</h5>
+                    <h5>Gerenciar colaborador</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -62,7 +81,7 @@
                         <thead class="table-dark">
                             <tr><th>Nome</th><th class="text-end" style="width:140px"></th></tr>
                         </thead>
-                        <tbody id="tabelaPedagogicos"></tbody>
+                        <tbody id="tabelacolaborador"></tbody>
                     </table>
                 </div>
             </div>
@@ -76,7 +95,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="editarNome" class="form-control" placeholder="Nome do pedagogico">
+                    <input type="text" id="editarNome" class="form-control" placeholder="Nome do colaborador">
                     <input type="hidden" id="editarId" value="">
                 </div>
                 <div class="modal-footer">
@@ -89,11 +108,11 @@
     <div class="modal fade" id="modalNovoProf" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header"><h5>Novo Pedagogico</h5>
+                <div class="modal-header"><h5>Novo colaborador</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="novoProfNome" class="form-control" placeholder="Nome do pedagogico">
+                    <input type="text" id="novoProfNome" class="form-control" placeholder="Nome do colaborador">
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" onclick="cadastrarProf()">Cadastrar</button>
@@ -110,11 +129,43 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <div class="table-responsive" style="max-height:70vh;overflow-y:auto">
+                    <div class="p-3 border-bottom bg-body-secondary">
+                        <div class="row g-2 align-items-end">
+                            <div class="col">
+                                <label class="form-label small mb-0">Data Inicio</label>
+                                <input type="date" id="filtroDataInicio" class="form-control form-control-sm">
+                            </div>
+                            <div class="col">
+                                <label class="form-label small mb-0">Data Fim</label>
+                                <input type="date" id="filtroDataFim" class="form-control form-control-sm">
+                            </div>
+                            <div class="col">
+                                <label class="form-label small mb-0">Status</label>
+                                <select id="filtroStatus" class="form-select form-select-sm">
+                                    <option value="">Todos</option>
+                                    <option value="Agendado">Agendado</option>
+                                    <option value="Atendido">Atendido</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                    <option value="Ausente">Ausente</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label small mb-0">Colaborador</label>
+                                <select id="filtroColabAg" class="form-select form-select-sm">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-primary btn-sm" onclick="carregarAgendamentos()">Filtrar</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="limparFiltrosAg()">Limpar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height:60vh;overflow-y:auto">
                         <table class="table table-sm table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Aluno</th><th>Tel.</th><th>Tipo</th><th>Ped.</th><th>Data</th><th>Hora</th><th>Status</th>
+                                    <th>cliente</th><th>Tel.</th><th>Tipo</th><th>Ped.</th><th>Data</th><th>Hora</th><th>Status</th>
                                     <th class="text-end" style="width:130px"></th>
                                 </tr>
                             </thead>
@@ -135,8 +186,8 @@
                 <div class="modal-body">
                     <input type="hidden" id="editAgId">
                     <div class="mb-2">
-                        <label class="form-label small">Aluno</label>
-                        <input type="text" id="editAgAluno" class="form-control form-control-sm">
+                        <label class="form-label small">cliente</label>
+                        <input type="text" id="editAgcliente" class="form-control form-control-sm">
                     </div>
                     <div class="mb-2">
                         <label class="form-label small">Telefone</label>
@@ -147,7 +198,7 @@
                         <input type="text" id="editAgTipo" class="form-control form-control-sm">
                     </div>
                     <div class="mb-2">
-                        <label class="form-label small">Matricula</label>
+                        <label class="form-label small">CPF</label>
                         <input type="text" id="editAgMat" class="form-control form-control-sm">
                     </div>
                     <div class="mb-2">
@@ -162,39 +213,145 @@
         </div>
     </div>
 
-    <div class="text-center text-muted small py-3">{{ versao }}</div>
+    <div class="modal fade" id="modalHorarios" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Gerenciar Horarios</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Selecione o colaborador</label>
+                        <select id="filtroHorarioColab" class="form-select" onchange="carregarHorarios()">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Data</th><th>Inicio</th><th>Fim</th><th>Intervalo</th><th>Tipo</th>
+                                    <th class="text-end" style="width:80px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaHorarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDashboard" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Dashboard - Estatisticas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="dashboardBody">
+                    <div class="text-center py-3 text-muted">Carregando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCredenciais" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Alterar Credenciais</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label small">Usuario atual</label>
+                        <input type="text" id="credUsuarioAtual" class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Senha atual</label>
+                        <input type="password" id="credSenhaAtual" class="form-control">
+                    </div>
+                    <hr>
+                    <div class="mb-2">
+                        <label class="form-label small">Novo usuario</label>
+                        <input type="text" id="credNovoUsuario" class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Nova senha</label>
+                        <input type="password" id="credNovaSenha" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="salvarCredenciais()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-muted small py-2 mt-auto border-top bg-body-secondary">{{ versao }}</footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
     <script>
         function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
 
+        // --- Filtros de agendamentos ---
+        function carregarFiltros() {
+            fetch('/api/colaborador').then(r => r.json()).then(data => {
+                const sel = document.getElementById('filtroColabAg');
+                sel.innerHTML = '<option value="">Todos</option>';
+                data.forEach(p => { sel.innerHTML += `<option value="${p.id}">${p.nome}</option>`; });
+            });
+            carregarAgendamentos();
+        }
+
+        function limparFiltrosAg() {
+            document.getElementById('filtroDataInicio').value = '';
+            document.getElementById('filtroDataFim').value = '';
+            document.getElementById('filtroStatus').value = '';
+            document.getElementById('filtroColabAg').value = '';
+            carregarAgendamentos();
+        }
+
         function carregarAgendamentos() {
-            fetch('/api/agendamentos').then(r => r.json()).then(data => {
+            const params = new URLSearchParams();
+            const di = document.getElementById('filtroDataInicio').value;
+            const df = document.getElementById('filtroDataFim').value;
+            const st = document.getElementById('filtroStatus').value;
+            const co = document.getElementById('filtroColabAg').value;
+            if (di) params.append('data_inicio', di);
+            if (df) params.append('data_fim', df);
+            if (st) params.append('status', st);
+            if (co) params.append('colaborador_id', co);
+            const qs = params.toString() ? '?' + params.toString() : '';
+            fetch('/api/agendamentos' + qs).then(r => r.json()).then(data => {
                 const tbody = document.getElementById('tabelaAgendamentos');
                 tbody.innerHTML = '';
                 if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">Nenhum agendamento</td></tr>'; return; }
                 data.forEach(a => {
                     const badge = a.status==='Atendido'?'bg-success':a.status==='Cancelado'?'bg-secondary':a.status==='Ausente'?'bg-warning text-dark':'bg-primary';
                     tbody.innerHTML += `<tr>
-                        <td class="small">${a.aluno}</td>
+                        <td class="small">${a.cliente}</td>
                         <td class="small">${a.telefone||''}</td>
                         <td class="small">${a.tipo}</td>
-                        <td class="small">${a.pedagogico_nome}</td>
+                        <td class="small">${a.colaborador_nome}</td>
                         <td class="small">${fmtD(a.data)}</td>
                         <td class="small">${a.hora_inicio}</td>
                         <td class="small"><span class="badge ${badge}">${a.status}</span></td>
                         <td class="text-end small">
-                            <button class="btn btn-outline-primary btn-sm py-0 px-2" onclick="editarAg(${a.id},'${(a.aluno||'').replace(/'/g,"\\'")}','${(a.telefone||'').replace(/'/g,"\\'")}','${(a.tipo||'').replace(/'/g,"\\'")}','${(a.matricula||'').replace(/'/g,"\\'")}','${(a.observacoes||'').replace(/'/g,"\\'")}')">Editar</button>
-                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="excluirAg(${a.id},'${(a.aluno||'').replace(/'/g,"\\'")}')">Excluir</button>
+                            <button class="btn btn-outline-primary btn-sm py-0 px-2" onclick="editarAg(${a.id},'${(a.cliente||'').replace(/'/g,"\\'")}','${(a.telefone||'').replace(/'/g,"\\'")}','${(a.tipo||'').replace(/'/g,"\\'")}','${(a.CPF||'').replace(/'/g,"\\'")}','${(a.observacoes||'').replace(/'/g,"\\'")}')">Editar</button>
+                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="excluirAg(${a.id},'${(a.cliente||'').replace(/'/g,"\\'")}')">Excluir</button>
                         </td>
                     </tr>`;
                 });
             });
         }
 
-        function editarAg(id, aluno, tel, tipo, mat, obs) {
+        // --- CRUD agendamentos ---
+        function editarAg(id, cliente, tel, tipo, mat, obs) {
             document.getElementById('editAgId').value = id;
-            document.getElementById('editAgAluno').value = aluno;
+            document.getElementById('editAgcliente').value = cliente;
             document.getElementById('editAgTel').value = tel;
             document.getElementById('editAgTipo').value = tipo;
             document.getElementById('editAgMat').value = mat;
@@ -205,13 +362,13 @@
         function salvarEditAg() {
             const id = document.getElementById('editAgId').value;
             const body = {
-                aluno: document.getElementById('editAgAluno').value.trim(),
+                cliente: document.getElementById('editAgcliente').value.trim(),
                 telefone: document.getElementById('editAgTel').value.trim(),
                 tipo: document.getElementById('editAgTipo').value.trim(),
-                matricula: document.getElementById('editAgMat').value.trim(),
+                CPF: document.getElementById('editAgMat').value.trim(),
                 observacoes: document.getElementById('editAgObs').value.trim()
             };
-            if (!body.aluno) return alert('Nome do aluno obrigatorio');
+            if (!body.cliente) return alert('Nome do cliente obrigatorio');
             fetch('/api/agendamentos/' + id, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
@@ -223,17 +380,18 @@
             });
         }
 
-        function excluirAg(id, aluno) {
-            if (!confirm('Excluir agendamento de "' + aluno + '"?')) return;
+        function excluirAg(id, cliente) {
+            if (!confirm('Excluir agendamento de "' + cliente + '"?')) return;
             fetch('/api/agendamentos/' + id, {method: 'DELETE'})
                 .then(r => r.json()).then(() => carregarAgendamentos());
         }
 
+        // --- CRUD colaborador ---
         function carregarLista() {
-            fetch('/api/pedagogicos').then(r => r.json()).then(data => {
-                const tbody = document.getElementById('tabelaPedagogicos');
+            fetch('/api/colaborador').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tabelacolaborador');
                 tbody.innerHTML = '';
-                if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-3">Nenhum pedagogico cadastrado</td></tr>'; return; }
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-3">Nenhum colaborador cadastrado</td></tr>'; return; }
                 data.forEach(p => {
                     tbody.innerHTML += `<tr>
                         <td class="align-middle">${p.nome}</td>
@@ -254,7 +412,7 @@
         function cadastrarProf() {
             const nome = document.getElementById('novoProfNome').value.trim();
             if (!nome) return alert('Digite um nome');
-            fetch('/api/pedagogicos', {
+            fetch('/api/colaborador', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({nome})
@@ -278,7 +436,7 @@
             const id = document.getElementById('editarId').value;
             const nome = document.getElementById('editarNome').value.trim();
             if (!nome) return alert('Digite um nome');
-            fetch('/api/pedagogicos/' + id, {
+            fetch('/api/colaborador/' + id, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({nome})
@@ -291,14 +449,154 @@
 
         function excluir(id, nome) {
             if (!confirm('Excluir "' + nome + '" e todos os seus horarios/agendamentos?')) return;
-            fetch('/api/pedagogicos/' + id, {method: 'DELETE'})
+            fetch('/api/colaborador/' + id, {method: 'DELETE'})
                 .then(r => r.json()).then(() => carregarLista());
         }
 
+        // --- Gerenciar Horarios ---
+        function carregarColabSelect(selectId) {
+            fetch('/api/colaborador').then(r => r.json()).then(data => {
+                const sel = document.getElementById(selectId);
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="">-- Selecione --</option>';
+                data.forEach(p => {
+                    const selected = p.id == currentVal ? ' selected' : '';
+                    sel.innerHTML += `<option value="${p.id}"${selected}>${p.nome}</option>`;
+                });
+            });
+        }
+
+        function carregarHorarios() {
+            const pid = document.getElementById('filtroHorarioColab').value;
+            const tbody = document.getElementById('tabelaHorarios');
+            tbody.innerHTML = '';
+            if (!pid) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Selecione um colaborador</td></tr>'; return; }
+            fetch('/api/horarios/' + pid).then(r => r.json()).then(data => {
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum horario cadastrado</td></tr>'; return; }
+                data.forEach(h => {
+                    tbody.innerHTML += `<tr>
+                        <td class="small">${fmtD(h.data)}</td>
+                        <td class="small">${h.hora_inicio}</td>
+                        <td class="small">${h.hora_fim}</td>
+                        <td class="small">${h.intervalo}min</td>
+                        <td class="small">${h.tipo||'-'}</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="excluirHorario(${h.id})">Excluir</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+        }
+
+        function excluirHorario(id) {
+            if (!confirm('Excluir este horario?')) return;
+            fetch('/api/horarios/' + id, {method: 'DELETE'})
+                .then(r => r.json()).then(() => carregarHorarios());
+        }
+
+        // --- Dashboard ---
+        function carregarDashboard() {
+            const body = document.getElementById('dashboardBody');
+            body.innerHTML = '<div class="text-center py-3 text-muted">Carregando...</div>';
+            fetch('/api/stats').then(r => r.json()).then(s => {
+                let statusHtml = '';
+                s.por_status.forEach(st => {
+                    statusHtml += `<span class="badge bg-secondary me-1">${st.status}: ${st.qtd}</span>`;
+                });
+                let colabHtml = '';
+                s.por_colaborador.forEach(c => {
+                    colabHtml += `<tr><td>${c.nome}</td><td class="text-end">${c.qtd}</td></tr>`;
+                });
+                body.innerHTML = `
+                    <div class="row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="card text-center border-primary">
+                                <div class="card-body py-3">
+                                    <div class="fs-2 fw-bold text-primary">${s.total}</div>
+                                    <div class="small text-muted">Total</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card text-center border-success">
+                                <div class="card-body py-3">
+                                    <div class="fs-2 fw-bold text-success">${s.hoje}</div>
+                                    <div class="small text-muted">Hoje</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card text-center border-warning">
+                                <div class="card-body py-3">
+                                    <div class="fs-2 fw-bold text-warning">${s.semana}</div>
+                                    <div class="small text-muted">Ultimos 7 dias</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header small fw-bold">Por Status</div>
+                                <div class="card-body text-center">${statusHtml || '<span class="text-muted">Nenhum dado</span>'}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header small fw-bold">Por Colaborador</div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>${colabHtml || '<tr><td class="text-center text-muted">Nenhum dado</td></tr>'}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }).catch(() => {
+                body.innerHTML = '<div class="alert alert-danger m-3">Erro ao carregar estatisticas</div>';
+            });
+        }
+
+        // --- Credenciais ---
+        function salvarCredenciais() {
+            const body = {
+                usuario_atual: document.getElementById('credUsuarioAtual').value.trim(),
+                senha_atual: document.getElementById('credSenhaAtual').value.trim(),
+                novo_usuario: document.getElementById('credNovoUsuario').value.trim(),
+                nova_senha: document.getElementById('credNovaSenha').value.trim()
+            };
+            if (!body.usuario_atual || !body.senha_atual || !body.novo_usuario || !body.nova_senha) return alert('Preencha todos os campos');
+            fetch('/api/admin/change-credentials', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            }).then(r => r.json()).then(d => {
+                if (d.erro) return alert(d.erro);
+                alert(d.mensagem);
+                document.getElementById('credUsuarioAtual').value = '';
+                document.getElementById('credSenhaAtual').value = '';
+                document.getElementById('credNovoUsuario').value = '';
+                document.getElementById('credNovaSenha').value = '';
+                bootstrap.Modal.getInstance(document.getElementById('modalCredenciais')).hide();
+            }).catch(() => alert('Erro ao alterar credenciais'));
+        }
+
+        // --- Backup ---
+        function fazerBackup() {
+            if (!confirm('Fazer backup do banco de dados agora?')) return;
+            fetch('/api/backup', {method: 'POST'})
+                .then(r => r.json()).then(d => {
+                    if (d.erro) return alert('Erro: ' + d.erro);
+                    alert('Backup concluido: ' + d.arquivo);
+                }).catch(() => alert('Erro ao fazer backup'));
+        }
+
+        // --- Event listeners ---
         document.getElementById('modalGerenciar').addEventListener('show.bs.modal', carregarLista);
         document.getElementById('modalEditar').addEventListener('shown.bs.modal', () => document.getElementById('editarNome').focus());
-        document.getElementById('modalAgendamentos').addEventListener('show.bs.modal', carregarAgendamentos);
-        document.getElementById('modalEditAg').addEventListener('shown.bs.modal', () => document.getElementById('editAgAluno').focus());
+        document.getElementById('modalEditAg').addEventListener('shown.bs.modal', () => document.getElementById('editAgcliente').focus());
+        document.getElementById('modalHorarios').addEventListener('show.bs.modal', () => carregarColabSelect('filtroHorarioColab'));
+        document.getElementById('modalHorarios').addEventListener('hidden.bs.modal', () => { document.getElementById('tabelaHorarios').innerHTML = ''; });
     </script>
 </body>
 </html>
