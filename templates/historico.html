@@ -36,14 +36,18 @@
         <div class="card shadow">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Atendimentos Concluidos</h5>
-                <span id="qtdHist" class="badge bg-success">0</span>
+                <div>
+                    <input type="text" id="filtroTel" class="form-control form-control-sm d-inline-block" style="width:160px" placeholder="Filtrar por telefone" oninput="carregar()">
+                    <button class="btn btn-sm btn-outline-secondary ms-1" onclick="document.getElementById('filtroTel').value='';carregar()">Limpar</button>
+                    <span id="qtdHist" class="badge bg-success ms-2">0</span>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
                     <table class="table table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>cliente</th><th>CPF</th><th>colaborador</th><th>Tipo</th><th>Data</th><th>Hora</th><th>Status</th>
+                                <th>cliente</th><th>CPF</th><th>Telefone</th><th>colaborador</th><th>Tipo</th><th>Data</th><th>Hora</th><th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaHistorico"></tbody>
@@ -58,19 +62,30 @@
     <script>
         function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
 
+        function fmtTel(t) {
+            if (!t) return '';
+            const d = t.replace(/\D/g,'');
+            if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+            if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+            return t;
+        }
+
         function carregar() {
+            const filtro = document.getElementById('filtroTel').value.trim().toLowerCase();
             fetch('/api/agendamentos?status=Atendido').then(r => r.json()).then(data => {
+                if (filtro) data = data.filter(a => (a.telefone||'').toLowerCase().includes(filtro));
                 const tbody = document.getElementById('tabelaHistorico');
                 document.getElementById('qtdHist').textContent = data.length;
                 tbody.innerHTML = '';
                 if (!data.length) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhum atendimento concluido</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum atendimento concluido</td></tr>';
                     return;
                 }
                 data.forEach(a => {
                     tbody.innerHTML += `<tr>
                         <td>${a.cliente}</td>
                         <td>${a.CPF}</td>
+                        <td>${fmtTel(a.telefone)}</td>
                         <td>${a.colaborador_nome}</td>
                         <td>${a.tipo}</td>
                         <td>${fmtD(a.data)}</td>

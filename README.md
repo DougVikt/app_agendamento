@@ -54,6 +54,7 @@ app_agendamento/
 │   ├── manifest-colaborador.json
 │   ├── manifest-central.json
 │   └── sw.js
+├── backup.ps1                    # Script de backup mensal
 ├── .agenda.db                    # Banco de dados (criado automaticamente)
 ├── .gitignore
 └── README.md
@@ -150,6 +151,10 @@ Variavel de ambiente `AGENDA_DB` permite definir caminho personalizado para o ar
 | POST | `/api/colaborador` | Cria colaborador |
 | PATCH | `/api/colaborador/<id>` | Renomeia colaborador |
 | DELETE | `/api/colaborador/<id>` | Exclui colaborador e dados relacionados |
+| GET | `/api/atendimento` | Lista usuarios da central |
+| POST | `/api/atendimento` | Cria usuario da central |
+| PATCH | `/api/atendimento/<id>` | Renomeia usuario |
+| DELETE | `/api/atendimento/<id>` | Remove usuario da central |
 | GET | `/api/horarios/<id>` | Lista horarios de um colaborador |
 | POST | `/api/horarios` | Cria horario |
 | DELETE | `/api/horarios/<id>` | Exclui horario |
@@ -173,6 +178,7 @@ O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
 
 | Versao | Data | Descricao |
 |---|---|---|
+| 2.5 | Mai 2026 | Tabela atendimento, coluna atendimento_user, indices, CRUD atendimento via API e admin, select obrigatorio no agendamento, responsavel nos detalhes do colaborador, filtro telefone no historico, backup script |
 | 2.1 | Mai 2026 | Admin auth, dashboard, gerenciar horarios, filtros em agendamentos, backup, change-credentials, CI tests |
 | 2.0 | Mai 2026 | PWA, manifests separados, tema escuro, historico por perfil, CI/CD basico |
 

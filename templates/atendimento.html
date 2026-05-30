@@ -101,6 +101,12 @@
                 <div class="modal-body">
                     <p id="confirmInfo" class="mb-3"></p>
                     <div class="mb-3">
+                        <label class="form-label">Responsavel</label>
+                        <select id="atendimentoUser" class="form-select" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Tipo de Atendimento</label>
                         <input type="text" id="campoTipo" class="form-control" placeholder="Ex: Apoio, Reforco, Exame">
                     </div>
@@ -188,30 +194,42 @@
             });
         }
 
+        function carregarAtendimentoUsers() {
+            fetch('/api/atendimento').then(r => r.json()).then(data => {
+                const sel = document.getElementById('atendimentoUser');
+                sel.innerHTML = '<option value="">Selecione...</option>';
+                data.forEach(u => { sel.innerHTML += `<option value="${u.nome}">${u.nome}</option>`; });
+            });
+        }
+
         function agendar(hora) {
             const pid = document.getElementById('filtroPed').value;
             const data = document.getElementById('filtroData').value;
             document.getElementById('confirmInfo').innerHTML =
                 `<strong>colaborador:</strong> ${colaboradorCache[pid]}<br><strong>Data:</strong> ${fmtD(data)}<br><strong>Horario:</strong> ${hora}`;
+            document.getElementById('atendimentoUser').value = '';
             document.getElementById('campoTipo').value = '';
             document.getElementById('clienteNome').value = '';
             document.getElementById('clienteCPF').value = '';
             document.getElementById('clienteTelefone').value = '';
             document.getElementById('clienteObs').value = '';
+            carregarAtendimentoUsers();
             slotSelecionado = { colaborador_id: parseInt(pid), data, hora_inicio: hora };
             modal.show();
         }
 
         function confirmarAgendamento() {
+            const atendimento_user = document.getElementById('atendimentoUser').value;
             const tipo = document.getElementById('campoTipo').value.trim();
             const cliente = document.getElementById('clienteNome').value.trim();
             const CPF = document.getElementById('clienteCPF').value.trim();
             const telefone = document.getElementById('clienteTelefone').value.trim();
             const observacoes = document.getElementById('clienteObs').value.trim();
+            if (!atendimento_user) return alert('Selecione o responsavel');
             if (!tipo) return alert('Digite o tipo de atendimento');
             if (!cliente) return alert('Digite o nome do cliente');
             fetch('/api/agendamentos', { method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({...slotSelecionado, tipo, cliente, CPF, telefone, observacoes}) })
+                body: JSON.stringify({...slotSelecionado, atendimento_user, tipo, cliente, CPF, telefone, observacoes}) })
                 .then(r => r.json()).then(d => {
                 if (d.erro) return alert(d.erro);
                 modal.hide(); onDataChange(); carregarAgendamentos(); carregarAlertas();

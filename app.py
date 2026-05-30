@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 
 app = Flask(__name__)
 app.secret_key = 'agenda2026secret'
-VERSAO = "v2.0"
+VERSAO = "v2.5"
 
 DB_PATH = os.environ.get("AGENDA_DB") or os.path.join(os.path.dirname(__file__), '.agenda.db')
 
@@ -22,6 +22,10 @@ def init_db():
     conn = get_db()
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS colaborador (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL UNIQUE
+        );
+        CREATE TABLE IF NOT EXISTS atendimento (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL UNIQUE
         );
@@ -50,10 +54,15 @@ def init_db():
             hora_fim TEXT NOT NULL,
             status TEXT NOT NULL DEFAULT 'Agendado',
             criado_em TEXT DEFAULT (datetime('now','localtime')),
+            atendimento_user TEXT DEFAULT '',
             FOREIGN KEY (colaborador_id) REFERENCES colaborador(id)
         );
+        CREATE INDEX IF NOT EXISTS idx_agendamentos_data ON agendamentos(data);
+        CREATE INDEX IF NOT EXISTS idx_agendamentos_colaborador ON agendamentos(colaborador_id);
+        CREATE INDEX IF NOT EXISTS idx_agendamentos_status ON agendamentos(status);
+        CREATE INDEX IF NOT EXISTS idx_horarios_colaborador ON horarios(colaborador_id);
     """)
-    for col in ['cpf', 'status', 'telefone', 'observacoes']:
+    for col in ['cpf', 'status', 'telefone', 'observacoes', 'atendimento_user']:
         try: conn.execute(f"ALTER TABLE agendamentos ADD COLUMN {col} TEXT DEFAULT ''")
         except: pass
     for col in ['recorrente', 'dia_semana']:
@@ -246,6 +255,53 @@ def remover_colaborador(id_):
     return jsonify({"ok": True})
 
 # ---------------------------------------------------------------------------
+# API - ATENDIMENTO
+# ---------------------------------------------------------------------------
+@app.route("/api/atendimento", methods=["GET"])
+def listar_atendimento():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM atendimento ORDER BY nome").fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/atendimento", methods=["POST"])
+def criar_atendimento():
+    dados = request.get_json()
+    nome = dados.get("nome", "").strip()
+    if not nome: return jsonify({"erro": "Nome obrigatorio"}), 400
+    conn = get_db()
+    try:
+        conn.execute("INSERT INTO atendimento (nome) VALUES (?)", (nome,))
+        conn.commit()
+        id_ = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+        conn.close()
+        return jsonify({"id": id_, "nome": nome}), 201
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"erro": "Ja existe"}), 400
+
+@app.route("/api/atendimento/<int:id_>", methods=["PATCH"])
+def renomear_atendimento(id_):
+    dados = request.get_json()
+    nome = dados.get("nome", "").strip()
+    if not nome: return jsonify({"erro": "Nome obrigatorio"}), 400
+    conn = get_db()
+    try:
+        conn.execute("UPDATE atendimento SET nome=? WHERE id=?", (nome, id_))
+        conn.commit(); conn.close()
+        return jsonify({"ok": True, "nome": nome})
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"erro": "Ja existe"}), 400
+
+@app.route("/api/atendimento/<int:id_>", methods=["DELETE"])
+def remover_atendimento(id_):
+    conn = get_db()
+    conn.execute("DELETE FROM atendimento WHERE id=?", (id_,))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+# ---------------------------------------------------------------------------
 # API - HORARIOS
 # ---------------------------------------------------------------------------
 @app.route("/api/horarios/<int:pid>", methods=["GET"])
@@ -337,8 +393,10 @@ def criar_agendamento():
     d = request.get_json()
     cliente = d.get("cliente", "").strip()
     tipo = d.get("tipo", "").strip()
+    atendimento_user = d.get("atendimento_user", "").strip()
     if not cliente: return jsonify({"erro": "Nome do cliente obrigatorio"}), 400
     if not tipo: return jsonify({"erro": "Tipo de atendimento obrigatorio"}), 400
+    if not atendimento_user: return jsonify({"erro": "Responsavel pelo agendamento obrigatorio"}), 400
     slots = slots_disponiveis(d["colaborador_id"], d["data"])
     if d["hora_inicio"] not in slots: return jsonify({"erro": "Horario indisponivel"}), 409
     conn = get_db()
@@ -351,8 +409,8 @@ def criar_agendamento():
     h_fim = (datetime.datetime.strptime(d["hora_inicio"], "%H:%M") +
              datetime.timedelta(minutes=hor["intervalo"])).strftime("%H:%M")
     conn.execute(
-        "INSERT INTO agendamentos (colaborador_id, tipo, cliente, cpf, telefone, observacoes, data, hora_inicio, hora_fim) VALUES (?,?,?,?,?,?,?,?,?)",
-        (d["colaborador_id"], tipo, cliente, d.get("cpf",""), d.get("telefone",""), d.get("observacoes",""), d["data"], d["hora_inicio"], h_fim)
+        "INSERT INTO agendamentos (colaborador_id, tipo, cliente, cpf, telefone, observacoes, data, hora_inicio, hora_fim, atendimento_user) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        (d["colaborador_id"], tipo, cliente, d.get("cpf",""), d.get("telefone",""), d.get("observacoes",""), d["data"], d["hora_inicio"], h_fim, atendimento_user)
     )
     conn.commit(); conn.close()
     return jsonify({"ok": True}), 201

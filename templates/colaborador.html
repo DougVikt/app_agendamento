@@ -141,10 +141,15 @@
     <div class="modal fade" id="modalObs" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header"><h5>Observações</h5>
+                <div class="modal-header"><h5>Detalhes</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="modalObsTexto"></div>
+                <div class="modal-body">
+                    <p><strong>Responsavel:</strong> <span id="modalObsResp"></span></p>
+                    <hr>
+                    <p><strong>Observacoes:</strong></p>
+                    <p id="modalObsTexto" class="text-muted"></p>
+                </div>
             </div>
         </div>
     </div>
@@ -157,7 +162,11 @@
 
         function fmtD(iso) { if (!iso) return ''; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
 
-        function verObs(el) { document.getElementById('modalObsTexto').textContent = decodeURIComponent(el.dataset.obs); new bootstrap.Modal(document.getElementById('modalObs')).show(); }
+        function verObs(el) {
+            document.getElementById('modalObsResp').textContent = el.dataset.resp || '-';
+            document.getElementById('modalObsTexto').textContent = decodeURIComponent(el.dataset.obs);
+            new bootstrap.Modal(document.getElementById('modalObs')).show();
+        }
 
         let colaboradorId = null;
         let calendarioData = { ano: 0, mes: 0 };
@@ -222,7 +231,7 @@
                     } else if (a.status === 'Cancelado') {
                         acao = '<span class="badge bg-secondary">Cancelado</span>';
                     }
-                    tbody.innerHTML += `<tr><td>${a.cliente}${a.observacoes ? ` <span class="text-muted" style="cursor:pointer" onclick="verObs(this)" data-obs="${encodeURIComponent(a.observacoes)}">&#9998;</span>` : ''}</td><td>${a.telefone || ''}</td><td>${a.tipo}</td>
+                    tbody.innerHTML += `<tr><td>${a.cliente}${a.observacoes ? ` <span class="text-muted" style="cursor:pointer" onclick="verObs(this)" data-obs="${encodeURIComponent(a.observacoes)}" data-resp="${(a.atendimento_user||'').replace(/"/g,'&quot;')}">&#9998;</span>` : ''}</td><td>${a.telefone || ''}</td><td>${a.tipo}</td>
                         <td>${fmtD(a.data)}</td><td>${a.hora_inicio}</td><td class="text-nowrap">${acao}</td></tr>`;
                 });
             });

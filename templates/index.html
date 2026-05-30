@@ -38,6 +38,11 @@
                     <small class="d-block text-muted">Cadastrar, editar ou excluir colaboradores</small>
                 </button>
 
+                <button class="btn btn-outline-secondary w-100 mb-3 py-3" data-bs-toggle="modal" data-bs-target="#modalAtendimento">
+                    Gerenciar Atendimento
+                    <small class="d-block text-muted">Cadastrar ou remover usuarios da central</small>
+                </button>
+
                 <button class="btn btn-outline-info w-100 mb-3 py-3" data-bs-toggle="modal" data-bs-target="#modalHorarios">
                     Gerenciar Horarios
                     <small class="d-block text-muted">Visualizar e excluir horarios dos colaboradores</small>
@@ -82,6 +87,29 @@
                             <tr><th>Nome</th><th class="text-end" style="width:140px"></th></tr>
                         </thead>
                         <tbody id="tabelacolaborador"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAtendimento" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Gerenciar Atendimento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" id="novoAtendNome" class="form-control" placeholder="Nome do usuario">
+                        <button class="btn btn-primary" onclick="cadastrarAtendimento()">Adicionar</button>
+                    </div>
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr><th>Nome</th><th class="text-end" style="width:80px"></th></tr>
+                        </thead>
+                        <tbody id="tabelaAtendimento"></tbody>
                     </table>
                 </div>
             </div>
@@ -453,6 +481,43 @@
                 .then(r => r.json()).then(() => carregarLista());
         }
 
+        // --- Gerenciar Atendimento ---
+        function carregarAtendimento() {
+            fetch('/api/atendimento').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tabelaAtendimento');
+                tbody.innerHTML = '';
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-3">Nenhum usuario cadastrado</td></tr>'; return; }
+                data.forEach(u => {
+                    tbody.innerHTML += `<tr>
+                        <td class="align-middle">${u.nome}</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removerAtendimento(${u.id},'${u.nome.replace(/'/g,"\\'")}')">Excluir</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+        }
+
+        function cadastrarAtendimento() {
+            const nome = document.getElementById('novoAtendNome').value.trim();
+            if (!nome) return alert('Digite um nome');
+            fetch('/api/atendimento', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome})
+            }).then(r => r.json()).then(d => {
+                if (d.erro) return alert(d.erro);
+                document.getElementById('novoAtendNome').value = '';
+                carregarAtendimento();
+            });
+        }
+
+        function removerAtendimento(id, nome) {
+            if (!confirm('Remover "' + nome + '"?')) return;
+            fetch('/api/atendimento/' + id, {method: 'DELETE'})
+                .then(r => r.json()).then(() => carregarAtendimento());
+        }
+
         // --- Gerenciar Horarios ---
         function carregarColabSelect(selectId) {
             fetch('/api/colaborador').then(r => r.json()).then(data => {
@@ -597,6 +662,7 @@
         document.getElementById('modalEditAg').addEventListener('shown.bs.modal', () => document.getElementById('editAgcliente').focus());
         document.getElementById('modalHorarios').addEventListener('show.bs.modal', () => carregarColabSelect('filtroHorarioColab'));
         document.getElementById('modalHorarios').addEventListener('hidden.bs.modal', () => { document.getElementById('tabelaHorarios').innerHTML = ''; });
+        document.getElementById('modalAtendimento').addEventListener('show.bs.modal', () => { document.getElementById('novoAtendNome').value = ''; carregarAtendimento(); });
     </script>
 </body>
 </html>
