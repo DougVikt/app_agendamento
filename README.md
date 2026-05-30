@@ -169,6 +169,15 @@ O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
 - Chrome/Edge: clique no icone de instalacao na barra de enderecos
 - Dispositivos moveis: menu do navegador > "Instalar aplicativo"
 
+## Historico de Versoes
+
+| Versao | Data | Descricao |
+|---|---|---|
+| 2.1 | Mai 2026 | Admin auth, dashboard, gerenciar horarios, filtros em agendamentos, backup, change-credentials, CI tests |
+| 2.0 | Mai 2026 | PWA, manifests separados, tema escuro, historico por perfil, CI/CD basico |
+
+Para ver o changelog completo: `git log --oneline --decorate`
+
 ## Licenca
 
 MIT — veja o arquivo [LICENSE](LICENSE).
