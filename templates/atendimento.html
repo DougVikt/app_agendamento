@@ -188,8 +188,8 @@
                 const q = document.getElementById('qtdSlots');
                 if (!slots.length) { c.innerHTML = '<div class="text-center text-muted py-5">Nenhum horario disponivel</div>'; q.textContent = '0'; return; }
                 q.textContent = slots.length;
-                let h = '<div class="row g-2 p-3">';
-                slots.forEach(s => { h += `<div class="col-4 col-md-3"><button class="btn btn-outline-success w-100" onclick="agendar('${s}')">${s}</button></div>`; });
+                let h = '<div class="row row-cols-4 row-cols-md-6 g-2 p-3">';
+                slots.forEach(s => { h += `<div class="col-auto col-md-6 col-sm-6"><button class="btn btn-outline-success w-100" onclick="agendar('${s}')">${s}</button></div>`; });
                 c.innerHTML = h + '</div>';
             });
         }
