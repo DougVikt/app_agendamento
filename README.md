@@ -174,15 +174,41 @@ O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
 - Chrome/Edge: clique no icone de instalacao na barra de enderecos
 - Dispositivos moveis: menu do navegador > "Instalar aplicativo"
 
-## Historico de Versoes
+## Changelog
 
-| Versao | Data | Descricao |
-|---|---|---|
-| 2.5 | Mai 2026 | Tabela atendimento, coluna atendimento_user, indices, CRUD atendimento via API e admin, select obrigatorio no agendamento, responsavel nos detalhes do colaborador, filtro telefone no historico, backup script |
-| 2.1 | Mai 2026 | Admin auth, dashboard, gerenciar horarios, filtros em agendamentos, backup, change-credentials, CI tests |
-| 2.0 | Mai 2026 | PWA, manifests separados, tema escuro, historico por perfil, CI/CD basico |
+### [v2.5] - Mai 2026
+**Tabela Atendimento e Rastreamento de Usuario**
+- Adicionada tabela `atendimento` no banco de dados
+- Coluna `atendimento_user` em agendamentos para registrar quem fez o agendamento
+- Indices de performance (`idx_agendamentos_data`, `idx_agendamentos_colaborador`, `idx_agendamentos_status`, `idx_horarios_colaborador`)
+- Endpoints CRUD `/api/atendimento` (GET, POST, PATCH, DELETE)
+- Modal "Gerenciar Atendimento" no painel admin para cadastro/remocao de usuarios
+- Select obrigatorio de responsavel no formulario de agendamento
+- Exibicao do responsavel nos detalhes do colaborador
+- Coluna Telefone com formatacao e filtro no historico
+- Script `backup.ps1` para backup mensal
 
-Para ver o changelog completo: `git log --oneline --decorate`
+### [v2.1] - Mai 2026
+**Autenticacao e Painel Administrativo**
+- Login administrativo com credenciais armazenadas no banco (padrao: admin/admin)
+- Pagina `login_admin.html` para autenticacao
+- Dashboard com estatisticas (total, hoje, semana, por status, por colaborador)
+- Modal "Gerenciar Horarios" para visualizar/excluir horarios de qualquer colaborador
+- Filtros no modal de agendamentos (periodo, status, colaborador)
+- Modal "Alterar Credenciais" no admin
+- Botao de backup manual integrado ao painel
+- Corrigido botao "Voltar" do historico para admin
+- Rodape com versao padronizado em todas as paginas
+- Testes CI para as novas funcionalidades
+
+### [v2.0] - Mai 2026
+**PWA e Refatoramento de Telas**
+- Renomeacao de templates: `central` -> `atendimento`, `pedagogico` -> `colaborador`
+- Progressive Web App (instalavel como aplicativo nativo)
+- Manifests separados por perfil
+- Tema escuro padrao
+- Historico por perfil de acesso
+- CI/CD basico com `ci.ps1`
 
 ## Licenca
 
