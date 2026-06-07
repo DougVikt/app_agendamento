@@ -1,4 +1,5 @@
 import sqlite3
+from pathlib import Path
 import os
 import hashlib
 import datetime
@@ -507,12 +508,17 @@ import shutil
 @app.route("/api/backup", methods=["POST"])
 def api_backup():
     try:
-        bk = DB_PATH.replace(".db", f".bak")
-        shutil.copy2(DB_PATH, bk)
-        return jsonify({"ok": True, "arquivo": bk})
+        bk_path = Path("Backup")
+        bk_path.mkdir(parents=True, exist_ok=True)
+
+        timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M")
+        bk_name = Path(DB_PATH).stem + f"_{timestamp}.db"
+        bk_dest = bk_path / bk_name
+
+        shutil.copy2(DB_PATH, bk_dest)
+        return jsonify({"ok": True, "arquivo": str(bk_dest)})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
-
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"SERVIDOR: http://0.0.0.0:5000 | Database: {DB_PATH}")
