@@ -57,7 +57,7 @@
 
         <div class="row">
             <!-- Slots -->
-            <div class="col-md-7">
+            <div class="col-md-4">
                 <div class="card shadow mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Horarios Disponiveis</h5>
@@ -70,7 +70,7 @@
             </div>
 
             <!-- Agendamentos -->
-            <div class="col-md-5">
+            <div class="col-md-8">
                 <div class="card shadow mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Agendamentos</h5>
@@ -80,7 +80,7 @@
                         <table class="table table-sm table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>cliente</th><th>Tel.</th><th>Tipo</th><th>Ped.</th><th>Data</th><th>Hora</th><th></th>
+                                    <th>cliente</th><th>Tel.</th><th>Tipo</th><th>Colb.</th><th>Data</th><th>Hora</th><th></th>
                                 </tr>
                             </thead>
                             <tbody id="tabelaAgendados"></tbody>
@@ -188,7 +188,7 @@
                 const q = document.getElementById('qtdSlots');
                 if (!slots.length) { c.innerHTML = '<div class="text-center text-muted py-5">Nenhum horario disponivel</div>'; q.textContent = '0'; return; }
                 q.textContent = slots.length;
-                let h = '<div class="row row-cols-4 row-cols-md-6 g-2 p-3">';
+                let h = '<div class="row g-2 p-3">';
                 slots.forEach(s => { h += `<div class="col-auto col-md-6 col-sm-6"><button class="btn btn-outline-success w-100" onclick="agendar('${s}')">${s}</button></div>`; });
                 c.innerHTML = h + '</div>';
             });
