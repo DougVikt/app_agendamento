@@ -2,30 +2,38 @@
 
 Sistema web completo para gerenciamento de agendamentos desenvolvido com Python/Flask. Permite que a central de atendimento agende horarios com colaboradores, que cada colaborador gerencie sua propria agenda, e que administradores tenham controle total sobre os dados.
 
-Inclui recursos de **Progressive Web App (PWA)**, permitindo instalacao em dispositivos moveis e desktop.
+Inclui recursos de **Progressive Web App (PWA)**, permitindo instalação em dispositivos moveis e desktop.
+
+**OBS:** SISTEMA DESENVOLVIDO PARA INTRANET , ANALIZAR QUESTÕES DE SEGURANÇA EM CASO DE SUBIR PARA REDE GLOBAL 
 
 ## Funcionalidades
 
 ### Central de Atendimento
 - Agendamento de horarios com colaboradores
-- Selecao de data e horarios disponiveis em tempo real
+- Seleção de data e horarios disponiveis em tempo real
 - Cadastro de dados do cliente (nome, CPF, telefone, observacoes)
-- Visualizacao e cancelamento de agendamentos
+- Visualização e cancelamento de agendamentos
+- Alertas de agendamentos pendentes em atraso
+- Seleção obrigatoria do responsavel (usuario da central) no agendamento
+- Atualização automatica a cada 15 segundos
 
 ### Colaborador
-- Cadastro de horarios disponiveis (data unica ou recorrencia semanal)
-- Visualizacao em calendario dos dias com agendamentos
+- Cadastro de horarios disponiveis (data única ou recorrência semanal)
+- Visualização em calendario dos dias com agendamentos (navegação mensal)
 - Controle de status dos atendimentos (Atendido, Ausente, Cancelado)
-- Notificacao de agendamentos pendentes
+- Notificação de agendamentos pendentes em atraso
+- Visualização do responsavel (central) nos detalhes do agendamento
+- Atualização automatica a cada 15 segundos
 
-### Administracao
-- **Gerenciar Colaboradores**: Cadastrar, editar e excluir colaboradores
+### Administração
+- **Gerenciar Colaboradores**: Cadastrar, editar e excluir colaboradores (exclui horarios e agendamentos em cascata)
+- **Gerenciar Atendimento**: Cadastrar e remover usuarios da central de atendimento
 - **Gerenciar Horarios**: Visualizar e excluir horarios de qualquer colaborador
-- **Gerenciar Agendamentos**: Filtrar por periodo, status e colaborador; editar ou excluir
+- **Gerenciar Agendamentos**: Filtrar por periodo, status e colaborador; editar dados ou excluir
 - **Dashboard**: Estatisticas com totais, agendamentos hoje, ultimos 7 dias, por status e por colaborador
-- **Historico**: Consulta de atendimentos concluidos
-- **Backup**: Exportacao manual do banco de dados
-- **Autenticacao**: Login protegido com credenciais alteraveis
+- **Historico**: Consulta de atendimentos concluidos com filtros
+- **Backup**: Exportação manual do banco de dados (pasta `Backup/` com timestamp)
+- **Autenticação**: Login protegido com credenciais alteraveis (hash SHA-256)
 
 ## Tecnologias
 
@@ -38,35 +46,41 @@ Inclui recursos de **Progressive Web App (PWA)**, permitindo instalacao em dispo
 
 ```
 app_agendamento/
-├── app.py                        # Aplicacao principal Flask
-├── templates/
-│   ├── index.html                # Painel administrativo
-│   ├── login_admin.html          # Login do admin
-│   ├── landing.html              # Pagina inicial
-│   ├── acesso_atendimento.html   # Login da central de atendimento
-│   ├── acesso_colaborador.html   # Login do colaborador
-│   ├── atendimento.html          # Central de atendimento
-│   ├── colaborador.html          # Painel do colaborador
-│   └── historico.html            # Historico de atendimentos
-├── static/
-│   ├── icon.svg
-│   ├── manifest.json
-│   ├── manifest-colaborador.json
-│   ├── manifest-central.json
-│   └── sw.js
+├── app.py                        # Aplicação principal Flask (525 linhas)
+├── pyproject.toml                # Configuração Poetry
+├── poetry.lock                   # Dependencias travadas
+├── Makefile                      # Atalhos: make run / make add
+├── ci.ps1                        # Script de testes automatizados (14 testes)
 ├── backup.ps1                    # Script de backup mensal
-├── .agenda.db                    # Banco de dados (criado automaticamente)
+├── .agenda.db                    # Banco de dados SQLite (criado automaticamente)
 ├── .gitignore
-└── README.md
+├── .gitattributes
+├── LICENSE                       # Licença MIT
+├── README.md
+├── templates/
+│   ├── landing.html              # Pagina inicial (dois botoes: Atendimento / Colaborador)
+│   ├── login_admin.html          # Login do admin
+│   ├── acesso_atendimento.html   # Entrada da central (1 clique)
+│   ├── acesso_colaborador.html   # Entrada do colaborador (selecionar ou cadastrar nome)
+│   ├── index.html                # Painel administrativo (gerenciamento completo)
+│   ├── atendimento.html          # Central de atendimento (agendamento)
+│   ├── colaborador.html          # Painel do colaborador (agenda propria)
+│   └── historico.html            # Historico de atendimentos concluidos
+└── static/
+    ├── icon.svg                  # Icone PWA
+    ├── manifest.json             # Manifest PWA generico
+    ├── manifest-central.json     # Manifest PWA para central de atendimento
+    ├── manifest-pedagogico.json  # Manifest PWA para colaborador
+    └── sw.js                     # Service Worker
 ```
 
-## Instalacao
+## Instalação
 
 ### Pre-requisitos
-- Python 3.6 ou superior
-- pip
+- Python 3.13 ou superior
+- pip (ou Poetry, opcional)
 
-### Passos
+### Passos (pip)
 
 1. Clone o repositorio:
    ```bash
@@ -93,11 +107,20 @@ app_agendamento/
    python app.py
    ```
 
-5. Acesse no navegador:
+### Passos (Poetry)
+
+```bash
+git clone <url>
+cd app_agendamento
+poetry install
+make run
+```
+
+Acesse no navegador:
    - Pagina inicial: `http://localhost:5000`
    - Painel admin: `http://localhost:5000/admin`
 
-> O banco de dados SQLite e criado automaticamente na primeira execucao.
+> O banco de dados SQLite e criado automaticamente na primeira execução.
 
 ## Credenciais Padrao
 
@@ -105,7 +128,7 @@ app_agendamento/
 |---|---|---|
 | Admin | `/admin` | `admin` / `admin` |
 | Central | `/inicio_atendimento` | Acesso livre (1 clique) |
-| Colaborador | `/inicio_colaborador` | Selecao do nome |
+| Colaborador | `/inicio_colaborador` | Seleção do nome |
 
 As credenciais de admin podem ser alteradas no proprio painel em "Alterar credenciais".
 
@@ -136,8 +159,11 @@ Tabelas principais:
 
 - **config** — Armazena credenciais do admin (usuario e senha com hash SHA-256)
 - **colaborador** — Dados dos colaboradores
+- **atendimento** — Usuarios da central de atendimento
 - **horarios** — Disponibilidade de horarios (com suporte a recorrencia semanal)
-- **agendamentos** — Registro de todos os agendamentos realizados
+- **agendamentos** — Registro de todos os agendamentos realizados (com `atendimento_user` para rastrear quem agendou)
+
+Indices: `idx_agendamentos_data`, `idx_agendamentos_colaborador`, `idx_agendamentos_status`, `idx_horarios_colaborador`
 
 Variavel de ambiente `AGENDA_DB` permite definir caminho personalizado para o arquivo `.db`.
 
@@ -145,7 +171,7 @@ Variavel de ambiente `AGENDA_DB` permite definir caminho personalizado para o ar
 
 ### Endpoints principais
 
-| Metodo | Rota | Descricao |
+| Metodo | Rota | Descrição |
 |---|---|---|
 | GET | `/api/colaborador` | Lista colaboradores |
 | POST | `/api/colaborador` | Cria colaborador |
@@ -171,10 +197,20 @@ Variavel de ambiente `AGENDA_DB` permite definir caminho personalizado para o ar
 ## PWA
 
 O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
-- Chrome/Edge: clique no icone de instalacao na barra de enderecos
+- Chrome/Edge: clique no icone de instalação na barra de enderecos
 - Dispositivos moveis: menu do navegador > "Instalar aplicativo"
 
 ## Changelog
+
+### [v2.7] - Jun 2026
+**Poetry, Makefile Aprimorado e Documentação**
+- Gerenciamento com Poetry (`pyproject.toml`, `poetry.lock`, `Makefile`)
+- Makefile aprimorado com comandos uteis e passagem de argumentos sem variavel nomeada
+- Backup manual agora cria pasta `Backup/` com nome de arquivo timestamp
+- Script `ci.ps1` com 14 testes automatizados (API, login, estatisticas, backup)
+- Reorganização do layout: blocos de horarios e botoes de navegação em `atendimento.html` e `colaborador.html`
+- README atualizado com documentação completa do projeto
+- Versão atualizada para `v2.7`
 
 ### [v2.5] - Mai 2026
 **Tabela Atendimento e Rastreamento de Usuario**
@@ -182,16 +218,16 @@ O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
 - Coluna `atendimento_user` em agendamentos para registrar quem fez o agendamento
 - Indices de performance (`idx_agendamentos_data`, `idx_agendamentos_colaborador`, `idx_agendamentos_status`, `idx_horarios_colaborador`)
 - Endpoints CRUD `/api/atendimento` (GET, POST, PATCH, DELETE)
-- Modal "Gerenciar Atendimento" no painel admin para cadastro/remocao de usuarios
+- Modal "Gerenciar Atendimento" no painel admin para cadastro/remoção de usuarios
 - Select obrigatorio de responsavel no formulario de agendamento
-- Exibicao do responsavel nos detalhes do colaborador
-- Coluna Telefone com formatacao e filtro no historico
+- Exibição do responsavel nos detalhes do colaborador
+- Coluna Telefone com formatação e filtro no historico
 - Script `backup.ps1` para backup mensal
 
 ### [v2.1] - Mai 2026
-**Autenticacao e Painel Administrativo**
+**Autenticação e Painel Administrativo**
 - Login administrativo com credenciais armazenadas no banco (padrao: admin/admin)
-- Pagina `login_admin.html` para autenticacao
+- Pagina `login_admin.html` para autenticação
 - Dashboard com estatisticas (total, hoje, semana, por status, por colaborador)
 - Modal "Gerenciar Horarios" para visualizar/excluir horarios de qualquer colaborador
 - Filtros no modal de agendamentos (periodo, status, colaborador)
@@ -203,7 +239,7 @@ O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
 
 ### [v2.0] - Mai 2026
 **PWA e Refatoramento de Telas**
-- Renomeacao de templates: `central` -> `atendimento`, `pedagogico` -> `colaborador`
+- Renomeação de templates: `central` -> `atendimento`, `pedagogico` -> `colaborador`
 - Progressive Web App (instalavel como aplicativo nativo)
 - Manifests separados por perfil
 - Tema escuro padrao
