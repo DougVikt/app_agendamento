@@ -1,6 +1,6 @@
 [project]
 name = "app-agendamento"
-version = "2.5"
+version = "2.7"
 description = "App para agendamento web entre atendentes e colaboradores"
 authors = [
     {name = "dougvikt"}

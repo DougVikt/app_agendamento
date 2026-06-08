@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 
 app = Flask(__name__)
 app.secret_key = 'agenda2026secret'
-VERSAO = "v2.5"
+VERSAO = "v2.7"
 
 DB_PATH = os.environ.get("AGENDA_DB") or os.path.join(os.path.dirname(__file__), '.agenda.db')
 
