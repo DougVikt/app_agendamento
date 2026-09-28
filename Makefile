@@ -1,9 +1,26 @@
 .SILENT:
 
 ARGS = $(filter-out $@,$(MAKECMDGOALS))
+POETRY_RUN = poetry run python
+DJANGO_RUN = $(POETRY_RUN) manage.py
 
-run:
-	poetry run python app.py
+
+# django comandos
+app-run:
+	$(DJANGO_RUN) startapp $(ARGS)
+
+check:
+	$(DJANGO_RUN) check
+
+migrate:
+	$(DJANGO_RUN) migrate
+
+runserver:
+	$(DJANGO_RUN) runserver
+
+# poetry comandos
+run-poetry:
+	$(POETRY_RUN) $(ARGS)
 
 install:
 	poetry install
@@ -14,15 +31,6 @@ add:
 remove:
 	poetry remove $(ARGS)
 
-test:
-	powershell -File ci.ps1
-
-backup:
-	powershell -File backup.ps1
-
-clean:
-	rm -rf __pycache__ .pytest_cache Backup
-
 update:
 	poetry update
 
@@ -32,5 +40,3 @@ lock:
 shell:
 	poetry shell
 
-%:
-	@true
