@@ -24,17 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = [
-    config(
+ALLOWED_HOSTS =config(
     'ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')]
-           )
-]
-
+)
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # meus apps
-    'control.apps.ControlConfig'
+    'control'
 ]
 
 MIDDLEWARE = [
@@ -123,6 +119,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# bloco de auth
+LOGIN_URL = '/accountsApp/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accountsApp/login/'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
