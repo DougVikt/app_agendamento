@@ -6,37 +6,43 @@ DJANGO_RUN = $(POETRY_RUN) manage.py
 
 
 # django comandos
-app-run:
+app-run: # inicia um novo app 
 	$(DJANGO_RUN) startapp $(ARGS)
 
-check:
+check: # checa a sintaxe 
 	$(DJANGO_RUN) check
 
-migrate:
+makemigrations:
+	$(DJANGO_RUN) makemigrations
+
+migrate: makemigrations # inicia as migrações
 	$(DJANGO_RUN) migrate
 
-runserver:
+runserver: # roda o servidor django
 	$(DJANGO_RUN) runserver
 
+cmd: # para executar comandos do django
+	$(DJANGO_RUN) $(ARGS)
+
 # poetry comandos
-run-poetry:
+run-poetry: # rodar comando dentro do ambiente
 	$(POETRY_RUN) $(ARGS)
 
-install:
+install: # instala dependencia do pyproject
 	poetry install
 
-add:
+add: # instala novas dependencias
 	poetry add $(ARGS)
 
-remove:
+remove: # remove dependencia
 	poetry remove $(ARGS)
 
-update:
+update: # sincroniza as denpendencias de acordo suas atualizações
 	poetry update
 
-lock:
+lock: # calcula e atualiza o arquivo poetry.lock sem alterar o arquivo pyproject.toml
 	poetry lock
 
-shell:
+shell: # ativa o ambiente virtual do projeto diretamente pelo terminal
 	poetry shell
 
