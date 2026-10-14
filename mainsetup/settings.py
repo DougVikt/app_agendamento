@@ -120,9 +120,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # bloco de auth
-LOGIN_URL = '/accountsApp/login/'
+LOGIN_URL = '/agendamento.app/login/'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accountsApp/login/'
+LOGOUT_REDIRECT_URL = '/agendamento.app/login/'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
