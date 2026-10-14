@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>home</title>
+  </head>
+  <body>
+    <h1>Olá, {{ request.user.username }}</h1>
+    <p>Grupos: {{ groups|join:", "|default:"(aguardando aprovação)" }}</p>
+    <a href="{% url 'control:logout' %}">Sair</a>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cadastro</title>
+  </head>
+  <body>
+    <h1>Criar conta</h1>
+    <form method="post">
+      {% csrf_token %}{{ form.as_p }}<button type="submit">Cadastrar</button>
+    </form>
+    <p>Seu acesso entra em análise e libera após aprovação do admin.</p>
+    <a href="{% url 'control:login' %}">Já tenho conta</a>
+  </body>
+</html>
