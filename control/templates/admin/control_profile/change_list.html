@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %} 
+{% comment %}
+    Aviso para ativação do usuario ao grupo
+{% endcomment %}
+{% block content %}
+<ul class="messagelist">
+  <li class="info">
+    Para aprovar: filtre <strong>status = pendente</strong> → marque os
+    cadastros → ação <strong>Aprovar selecionados</strong> → Executar. A
+    aprovação ativa o login e coloca o usuário no grupo solicitado.
+  </li>
+</ul>
+{{ block.super }} 
+{% endblock %}

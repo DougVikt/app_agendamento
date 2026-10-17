@@ -8,6 +8,8 @@ class ProfileAdmin(admin.ModelAdmin):
     list_filter = ('status', 'requested_type')
     search_fields = ('user__username',)
     actions = ('aprovar', 'rejeitar')
+    # template de aviso
+    change_list_template = 'admin/control_profile/change_list.html'
 
     @admin.action(description='Aprovar selecionados')
     def aprovar(self, request, queryset):
