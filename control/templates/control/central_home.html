@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Central de Atendimento</title>
+</head>
+<body>
+    <h1>Central de Atendimento</h1>
+    {% if error %}<p>{{ error }}</p>{% endif %}
+
+    <h2>1. Escolher profissional e data</h2>
+    <form method="get">
+        <select name="professional" required>
+            {% for p in professionals %}<option value="{{ p.id }}">{{ p.username }}</option>{% endfor %}
+        </select>
+        <input name="date" type="date" value="{{ selected_date }}" required>
+        <button type="submit">Ver horários</button>
+    </form>
+
+    {% if slots %}
+    <h2>2. Horários livres</h2>
+    <ul>
+        {% for s in slots %}
+        <li>{{ s|time:"H:i" }}
+            <form method="post" action="{% url 'control:appointment_create' %}">
+                {% csrf_token %}
+                <input type="hidden" name="professional" value="{{ selected_pro.id }}">
+                <input type="hidden" name="date" value="{{ selected_date }}">
+                <input type="hidden" name="start_time" value="{{ s|time:'H:i' }}">
+                <input name="client" placeholder="Cliente" required>
+                <input name="cpf" placeholder="CPF">
+                <input name="phone" type="tel" placeholder="Telefone">
+                <input name="service_type" placeholder="Tipo de serviço" required>
+                <input name="comments" placeholder="Observações">
+                <button type="submit">Agendar</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h2>Agendados</h2>
+    <ul>
+        {% for a in upcoming %}
+        <li>{{ a.date }} {{ a.start_time|time:"H:i" }} — {{ a.client }}
+            <a href="{% url 'control:appointment_edit' a.id %}">Editar</a>
+            <a href="{% url 'control:appointment_reschedule' a.id %}">Remarcar</a>
+        </li>
+        {% empty %}<li>Nenhum.</li>{% endfor %}
+    </ul>
+    <a href="{% url 'control:logout' %}">Sair</a>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Histórico — Agendamento</title>
+</head>
+<body>
+  <h1>Histórico de atendimentos</h1>
+  <form method="get" style="margin-bottom:1em;">
+    <input name="cliente" value="{{ filtros.cliente }}" placeholder="Cliente" />
+    <input name="cpf" value="{{ filtros.cpf }}" placeholder="CPF" />
+    <input name="telefone" value="{{ filtros.telefone }}" placeholder="Telefone" />
+    <input name="data_inicio" type="date" value="{{ filtros.data_inicio }}" />
+    <input name="data_fim" type="date" value="{{ filtros.data_fim }}" />
+    <select name="status">
+      <option value="">Todos os status</option>
+      <option value="agendado" {% if filtros.status == 'agendado' %}selected{% endif %}>Agendado</option>
+      <option value="atendido" {% if filtros.status == 'atendido' %}selected{% endif %}>Atendido</option>
+      <option value="ausente" {% if filtros.status == 'ausente' %}selected{% endif %}>Ausente</option>
+      <option value="cancelado" {% if filtros.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+    </select>
+    <input name="atendente" value="{{ filtros.atendente }}" placeholder="Atendente (nome)" />
+    <button type="submit">Filtrar</button>
+    <a href="{% url 'control:historico' %}">Limpar</a>
+  </form>
+
+  <table border="1" cellpadding="4" style="border-collapse:collapse; width:100%;">
+    <tr><th>Data</th><th>Cliente</th><th>CPF</th><th>Telefone</th><th>Tipo</th><th>Status</th><th>Profissional</th><th>Atendente</th><th>Observações</th></tr>
+    {% for a in agendamentos %}
+    <tr>
+      <td>{{ a.date }}</td>
+      <td>{{ a.client }}</td>
+      <td>{{ a.cpf }}</td>
+      <td>{{ a.phone }}</td>
+      <td>{{ a.service_type }}</td>
+      <td>{{ a.status }}</td>
+      <td>{{ a.professional.username }}</td>
+      <td>{{ a.created_by.username|default:"—" }}</td>
+      <td>
+        {% if request.user.groups.filter(name='recepcao').exists %}
+          —
+        {% else %}
+          {{ a.comments|default:"—" }}
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8">Nenhum resultado.</td></tr>
+    {% endfor %}
+  </table>
+
+  <a href="{% url 'control:home' %}">Voltar</a>
+</body>
+</html>

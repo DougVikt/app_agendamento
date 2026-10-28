@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>agendamento</title>
+  </head>
+  <body>
+    <h1>Editar agendamento</h1>
+    <form method="post">
+      {% csrf_token %}
+      <input name="client" value="{{ appt.client }}" required />
+      <input name="cpf" value="{{ appt.cpf }}" />
+      <input name="phone" value="{{ appt.phone }}" />
+      <input name="service_type" value="{{ appt.service_type }}" required />
+      <input name="comments" value="{{ appt.comments }}" />
+      <button type="submit">Salvar</button>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Agendamento</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        [data-bs-theme="dark"] { --bs-primary: #00a859; --bs-primary-rgb: 0, 168, 89; }
+        .btn-primary { --bs-btn-bg: #00a859; --bs-btn-border-color: #00a859; }
+        .btn-primary:hover { --bs-btn-hover-bg: #008f4a; --bs-btn-hover-border-color: #008f4a; }
+        .logo { font-size: 3rem; font-weight: 700; color: #00a859; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+    <div class="container text-center flex-grow-1 d-flex flex-column justify-content-center" style="max-width:600px;">
+        <div class="logo mb-2">&#9776;</div>
+        <h1 class="display-5 fw-bold mb-2">Sistema de Agendamento</h1>
+        <p class="lead mb-4">Bem-vindo ao sistema de agendamento de atendimentos. Esta ferramenta permite que a central de atendimento agende horarios com o colaborador, e que cada colaborador gerencie sua propria agenda.</p>
+        <a href="/agendamento.app/login/" class="text-decoration-none text-light"><button type="button" class="btn btn-primary w-100 py-2 my-1 fs-3">Atendimento</button></a>
+        <a href="/agendamento.app/login/" class="text-decoration-none text-light"><button type="button" class="btn btn-primary w-100 py-2 my-1 fs-3">Colaborador</button></a>
+    </div>
+    <footer class="text-center text-muted small py-2 mt-auto border-top bg-body-secondary">Sistema de Agendamento v2.7 — Intranet</footer>
+</body>
+</html>

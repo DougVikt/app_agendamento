@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Remarcar — {{ appt.client }}</h1>
+    <p>
+      Atual: {{ appt.date }} {{ appt.start_time|time:"H:i" }} | {{
+      appt.rescheduled_customer|default:"nunca remarcado" }}
+    </p>
+    {% if error %}
+    <p>{{ error }}</p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="date" name="date" required />
+      <input type="time" name="start_time" required />
+      <button type="submit">Remarcar</button>
+    </form>
+  </body>
+</html>
