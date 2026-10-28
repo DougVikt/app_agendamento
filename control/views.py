@@ -20,7 +20,7 @@ def home_for(user):
     if 'central' in groups:
         return reverse('control:home')
     if 'profissional' in groups:
-        return reverse('control:home')
+        return reverse('control:professional_home')
     if 'recepcao' in groups:
         return reverse('control:recepcao_home')
     return reverse('control:pending')
@@ -79,9 +79,9 @@ def recepcao_home(request):
     permitido so a visualiação dos dados 
     """
     today = timezone.localdate()
-    upcoming = Appointment.objects.filter(status='Agendado', date__gte=today).order_by('date', 'start_time')
-    overdue_list = Appointment.objects.filter(status='Agendado', date__lt=today).order_by('date', 'start_time')
-    history = Appointment.objects.exclude(status='Agendado').order_by('-date', '-start_time')[:100]
+    upcoming = Appointment.objects.filter(status='agendado', date__gte=today).order_by('date', 'start_time')
+    overdue_list = Appointment.objects.filter(status='agendado', date__lt=today).order_by('date', 'start_time')
+    history = Appointment.objects.exclude(status='agendado').order_by('-date', '-start_time')[:100]
     return render(request, 'control/recepcao_home.html', {
         'upcoming': upcoming, 'overdue_list': overdue_list, 'history': history,
     })
@@ -98,9 +98,9 @@ def central_home(request):
         selected_pro = get_object_or_404(User, pk=pro_id, groups__name='profissional')
         target = datetime.strptime(selected_date, '%Y-%m-%d').date()
         slots = available_slots(selected_pro, target)
-        upcoming = Appointment.objects.filter(professional=selected_pro, status='Agendado').order_by('date', 'start_time')
+        upcoming = Appointment.objects.filter(professional=selected_pro, status='agendado').order_by('date', 'start_time')
     else:
-        upcoming = Appointment.objects.filter(status='Agendado').order_by('date', 'start_time')
+        upcoming = Appointment.objects.filter(status='agendado').order_by('date', 'start_time')
     return render(request, 'control/central_home.html', {
         'professionals': professionals, 'slots': slots,
         'selected_pro': selected_pro, 'selected_date': selected_date,
@@ -115,10 +115,10 @@ def appointment_create(request):
     target = datetime.strptime(request.POST['date'], '%Y-%m-%d').date()
     start = datetime.strptime(request.POST['start_time'], '%H:%M').time()
     if start not in available_slots(pro, target):
-        return render(request, 'control/central_home.html', {'error': 'Horário indisponível.'})
+        return render(request, redirect('control:central_home'), {'error': 'Horário indisponível.'})
     Appointment.objects.create(
         professional=pro, created_by=request.user,
-        type_service=request.POST.get('service_type', ''),  # ver nota abaixo
+        service_type=request.POST.get('service_type', ''),  # ver nota abaixo
         client=request.POST['client'].strip(), cpf=request.POST.get('cpf', ''),
         phone=request.POST.get('phone', ''), comments=request.POST.get('comments', ''),
         date=target, start_time=start, end_time=resolve_end_time(pro, target, start),

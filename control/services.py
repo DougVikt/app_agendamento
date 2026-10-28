@@ -41,7 +41,7 @@ def available_slots(professional, target_date, exclude_appointment_id=None):
         day_slots.update(generate_slots(entry.start_time, entry.end_time, entry.interval))
 
     booked = Appointment.objects.filter(
-        professional=professional, date=target_date, status='Agendado',
+        professional=professional, date=target_date, status='agendado',
     )
     if exclude_appointment_id:
         booked = booked.exclude(pk=exclude_appointment_id)
