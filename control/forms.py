@@ -1,7 +1,19 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from .models import Profile
+from .models import Profile, ScheduleTime
+
+
+class ScheduleTimeForm(forms.ModelForm):
+    # Formulario para criar grade de horario do profissional
+    class Meta:
+        model = ScheduleTime
+        fields = ['date', 'start_time', 'end_time', 'interval', 'recurring', 'day_week']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
 
 
 class SignupForm(forms.Form):
