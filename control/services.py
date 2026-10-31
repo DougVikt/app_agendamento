@@ -3,14 +3,19 @@ from django.db.models import Q
 from django.utils import timezone
 from .models import Appointment, ScheduleTime
 
+WEEKDAY_LABELS = [
+    'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira',
+    'Sexta-feira', 'Sábado', 'Domingo',
+]
+
 
 def generate_slots(start_time, end_time, interval_minutes):
     """
-    para calcular o intervalo de horarios disponiveis 
-    deixa opções marcaveis de 30 min , sem acesso aos dados do banco
-    
-    exemplo : pega um intervalo de horario de 08:00~12:00 
-    separa em janelas de 30 min , 08:00-08:30 , 09:00-09:30,...
+    Calcula os horários disponíveis de uma grade.
+
+    Exemplo: uma grade de 08:00 a 12:00 com intervalo de 30 minutos
+    gera 08:00, 08:30, 09:00... até 11:30. Só entram horários cujo
+    atendimento termina dentro do fim da grade.
     """
     slots = []
     today = timezone.localdate()
@@ -25,10 +30,10 @@ def generate_slots(start_time, end_time, interval_minutes):
 
 def available_slots(professional, target_date, exclude_appointment_id=None):
     """
-    Devolve os horarios possiveis do uruario(profissional) 
-    
+    Devolve os horários possíveis de um profissional em uma data.
+
     Junta os slots das grades fixa e semanal recorrente via
-    generate_slots e remove os ocupados ('Agendado') e os já
+    generate_slots e remove os ocupados ('agendado') e os já
     passados. Passe exclude_appointment_id ao remarcar para que
     o agendamento movido não bloqueie a si mesmo.
     """
@@ -76,3 +81,28 @@ def resolve_end_time(professional, target_date, start_time):
         raise ValueError('Horário fora da grade do profissional.')
     end = datetime.combine(target_date, start_time) + timedelta(minutes=entry.interval)
     return end.time()
+
+
+def available_slots_by_day(professional, start_date=None, days=21, exclude_appointment_id=None):
+    """
+    Agrupa os horários livres do profissional por dia.
+
+    Retorna uma lista de dicionários com data, rótulo do dia da semana e
+    a lista de horários disponíveis. Dias sem vaga são omitidos.
+    """
+    if start_date is None:
+        start_date = timezone.localdate()
+    result = []
+    for offset in range(days):
+        target_date = start_date + timedelta(days=offset)
+        slots = available_slots(
+            professional, target_date,
+            exclude_appointment_id=exclude_appointment_id,
+        )
+        if slots:
+            result.append({
+                'date': target_date,
+                'weekday_label': WEEKDAY_LABELS[target_date.weekday()],
+                'slots': slots,
+            })
+    return result
