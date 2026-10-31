@@ -1,0 +1,146 @@
+{% extends "control/layouts/base.html" %}
+{# Remarcação: lista horários livres e preserva o contador de remarcações. #}
+{% block title %}Remarcar agendamento · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho com retorno contextual para a central ou para o profissional. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Remarcação</span>
+        <h1 class="page-title">Remarcar — {{ appt.client }}</h1>
+        <p class="page-subtitle">Escolha um novo horário disponível na agenda do profissional.</p>
+    </div>
+    {% if is_central_user %}
+    <a href="{% url 'control:central_home' %}?professional={{ appt.professional.id }}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+    {% else %}
+    <a href="{% url 'control:professional_home' %}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        {# Resumo do agendamento atual, incluindo o histórico de remarcações. #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-calendar2-check me-2"></i>Agendamento atual</div>
+            <div class="card-body">
+                <div class="summary-row">
+                    <span>Profissional</span>
+                    <strong>{{ appt.professional.get_full_name|default:appt.professional.username }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Data</span>
+                    <strong>{{ appt.date|date:"d/m/Y" }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Horário</span>
+                    <strong>{{ appt.start_time|time:"H:i" }} – {{ appt.end_time|time:"H:i" }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Status</span>
+                    <span class="badge text-bg-{{ appt.status_badge_class }}">{{ appt.get_status_display }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Remarcações</span>
+                    {% if appt.reschedule_badge %}
+                    <span class="badge text-bg-info">{{ appt.reschedule_badge }}</span>
+                    {% else %}
+                    <span class="text-muted small">Nenhuma</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        {# Seleção do novo horário; o envio fica desabilitado até escolher um slot. #}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock me-2"></i>Horários disponíveis</span>
+                <span class="badge text-bg-success">{{ available_days|length }} dia{{ available_days|length|pluralize }}</span>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" id="rescheduleForm" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="date" id="rescheduleDate" />
+                    <input type="hidden" name="start_time" id="rescheduleTime" />
+                    <div class="booking-summary mb-3" id="rescheduleSummary">
+                        <i class="bi bi-hand-index-thumb me-2"></i>Clique em um horário abaixo para selecionar.
+                    </div>
+
+                    {% if available_days %}
+                    <div class="row g-3">
+                        {% for day in available_days %}
+                        <div class="col-md-6">
+                            <div class="day-card">
+                                <div class="day-card-head">
+                                    <span>{{ day.weekday_label }}</span>
+                                    <strong>{{ day.date|date:"d/m" }}</strong>
+                                </div>
+                                <div class="slot-grid">
+                                    {% for slot in day.slots %}
+                                    <button type="button" class="slot-btn reschedule-slot" data-date="{{ day.date|date:'Y-m-d' }}" data-time="{{ slot|time:'H:i' }}" data-label="{{ day.weekday_label }}, {{ day.date|date:'d/m/Y' }} às {{ slot|time:'H:i' }}">
+                                        {{ slot|time:"H:i" }}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {# Sem vagas nas próximas três semanas para o profissional. #}
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <h2>Sem horários livres</h2>
+                        <p>Não há vagas nos próximos 21 dias para este profissional.</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary" id="rescheduleSubmit" disabled>
+                            <i class="bi bi-arrow-repeat me-1"></i>Confirmar remarcação
+                        </button>
+                        {% if is_central_user %}
+                        <a href="{% url 'control:central_home' %}?professional={{ appt.professional.id }}" class="btn btn-outline-light">Cancelar</a>
+                        {% else %}
+                        <a href="{% url 'control:professional_home' %}" class="btn btn-outline-light">Cancelar</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{# Preenche os campos ocultos e habilita o envio ao selecionar um horário. #}
+<script>
+    const rescheduleForm = document.getElementById('rescheduleForm');
+    if (rescheduleForm) {
+        const dateInput = document.getElementById('rescheduleDate');
+        const timeInput = document.getElementById('rescheduleTime');
+        const summary = document.getElementById('rescheduleSummary');
+        const submit = document.getElementById('rescheduleSubmit');
+        rescheduleForm.querySelectorAll('.reschedule-slot').forEach(button => {
+            button.addEventListener('click', () => {
+                rescheduleForm.querySelectorAll('.reschedule-slot').forEach(item => item.classList.remove('active'));
+                button.classList.add('active');
+                dateInput.value = button.dataset.date;
+                timeInput.value = button.dataset.time;
+                summary.innerHTML = '<i class="bi bi-calendar-check me-2"></i><strong>' + button.dataset.label + '</strong>';
+                submit.disabled = false;
+            });
+        });
+    }
+</script>
+{% endblock %}

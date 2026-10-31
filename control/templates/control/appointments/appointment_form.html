@@ -1,0 +1,101 @@
+{% extends "control/layouts/base.html" %}
+{# Edição de agendamento: mantém data e hora e atualiza os dados do cliente. #}
+{% block title %}Editar agendamento · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho e retorno para a central já filtrada pelo profissional. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Central de Atendimento</span>
+        <h1 class="page-title">Editar agendamento</h1>
+        <p class="page-subtitle">Atualize os dados do cliente sem alterar o horário.</p>
+    </div>
+    <a href="{% url 'control:central_home' %}?professional={{ appt.professional.id }}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        {# Resumo somente leitura do horário, status e remarcações atuais. #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-calendar2-check me-2"></i>Resumo</div>
+            <div class="card-body">
+                <div class="summary-row">
+                    <span>Profissional</span>
+                    <strong>{{ appt.professional.get_full_name|default:appt.professional.username }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Data</span>
+                    <strong>{{ appt.date|date:"d/m/Y" }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Horário</span>
+                    <strong>{{ appt.start_time|time:"H:i" }} – {{ appt.end_time|time:"H:i" }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Status</span>
+                    <span class="badge text-bg-{{ appt.status_badge_class }}">{{ appt.get_status_display }}</span>
+                </div>
+                {% if appt.reschedule_badge %}
+                <div class="summary-row">
+                    <span>Remarcações</span>
+                    <span class="badge text-bg-info">{{ appt.reschedule_badge }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {# Atalho para o fluxo de remarcação, que altera data e hora. #}
+        <a href="{% url 'control:appointment_reschedule' appt.id %}" class="btn btn-outline-warning w-100 mt-3">
+            <i class="bi bi-arrow-repeat me-1"></i>Remarcar horário
+        </a>
+    </div>
+
+    <div class="col-lg-8">
+        {# Formulário de dados cadastrais validado pelo AppointmentForm. #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-person-lines-fill me-2"></i>Dados do cliente</div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="{{ form.client.id_for_label }}">Cliente</label>
+                            {{ form.client }}
+                            {% for error in form.client.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="{{ form.cpf.id_for_label }}">CPF</label>
+                            {{ form.cpf }}
+                            {% for error in form.cpf.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.phone.id_for_label }}">Telefone</label>
+                            {{ form.phone }}
+                            {% for error in form.phone.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.service_type.id_for_label }}">Tipo de serviço</label>
+                            {{ form.service_type }}
+                            {% for error in form.service_type.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="{{ form.comments.id_for_label }}">Observações</label>
+                            {{ form.comments }}
+                            {% for error in form.comments.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2 me-1"></i>Salvar alterações
+                        </button>
+                        <a href="{% url 'control:central_home' %}?professional={{ appt.professional.id }}" class="btn btn-outline-light">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
