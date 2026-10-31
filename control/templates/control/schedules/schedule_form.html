@@ -1,0 +1,132 @@
+{% extends "control/layouts/base.html" %}
+{# Cadastro de grade: data específica ou recorrência semanal, com intervalo entre horários. #}
+{% block title %}Nova grade · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho e retorno ao painel do profissional. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Profissional</span>
+        <h1 class="page-title">Nova grade de horários</h1>
+        <p class="page-subtitle">Defina quando você atende e de quanto em quanto tempo os horários ficam disponíveis.</p>
+    </div>
+    <a href="{% url 'control:professional_home' %}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        {# Formulário validado pelo ScheduleTimeForm e pela constraint de recorrência. #}
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post" id="gradeForm" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    {# Alterna entre grade semanal e data específica; o JS ajusta os campos exigidos. #}
+                    <div class="form-check form-switch mb-4">
+                        {{ form.recurring }}
+                        <label class="form-check-label" for="{{ form.recurring.id_for_label }}">Repetir semanalmente</label>
+                        <div class="form-text">{{ form.recurring.help_text }}</div>
+                    </div>
+
+                    <div id="dateGroup" class="mb-3">
+                        <label class="form-label" for="{{ form.date.id_for_label }}">Data específica</label>
+                        {{ form.date }}
+                        <div class="form-text">{{ form.date.help_text }}</div>
+                        {% for error in form.date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div id="weekdayGroup" class="mb-3 d-none">
+                        <label class="form-label" for="{{ form.day_week.id_for_label }}">Dia da semana</label>
+                        {{ form.day_week }}
+                        {% for error in form.day_week.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.start_time.id_for_label }}">Início</label>
+                            {{ form.start_time }}
+                            {% for error in form.start_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.end_time.id_for_label }}">Fim</label>
+                            {{ form.end_time }}
+                            {% for error in form.end_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.interval.id_for_label }}">Intervalo entre horários</label>
+                            {{ form.interval }}
+                            <div class="form-text">{{ form.interval.help_text }}</div>
+                            {% for error in form.interval.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    {# Exemplo prático de como o intervalo gera os horários disponíveis. #}
+                    <div class="alert alert-info d-flex gap-2 mt-4">
+                        <i class="bi bi-info-circle mt-1"></i>
+                        <div>
+                            Exemplo: das 08:00 às 12:00 com intervalo de 30 minutos, os horários
+                            disponíveis serão 08:00, 08:30, 09:00... até 11:30.
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2 me-1"></i>Salvar grade
+                        </button>
+                        <a href="{% url 'control:professional_home' %}" class="btn btn-outline-light">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        {# Passo a passo exibido no painel lateral para orientar o cadastro. #}
+        <div class="card">
+            <div class="card-header"><i class="bi bi-lightbulb me-2"></i>Como funciona</div>
+            <div class="card-body">
+                <ol class="step-list">
+                    <li>
+                        <span>1</span>
+                        <div><strong>Escolha o tipo</strong><p>Uma data específica ou uma repetição semanal.</p></div>
+                    </li>
+                    <li>
+                        <span>2</span>
+                        <div><strong>Defina o período</strong><p>Informe o horário de início e fim do atendimento.</p></div>
+                    </li>
+                    <li>
+                        <span>3</span>
+                        <div><strong>Escolha o intervalo</strong><p>É o espaço entre um horário e outro na agenda.</p></div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{# Alterna os campos visíveis e desabilita o campo que não será enviado no POST. #}
+<script>
+    const recurringField = document.getElementById('id_recurring');
+    const dateGroup = document.getElementById('dateGroup');
+    const weekdayGroup = document.getElementById('weekdayGroup');
+    const dateField = document.getElementById('id_date');
+    const weekdayField = document.getElementById('id_day_week');
+
+    function toggleRecurring() {
+        const weekly = recurringField.checked;
+        dateGroup.classList.toggle('d-none', weekly);
+        weekdayGroup.classList.toggle('d-none', !weekly);
+        dateField.disabled = weekly;
+        weekdayField.disabled = !weekly;
+    }
+
+    recurringField.addEventListener('change', toggleRecurring);
+    toggleRecurring();
+</script>
+{% endblock %}
