@@ -1,7 +1,6 @@
-{% extends "admin/change_list.html" %} 
-{% comment %}
-    Aviso para ativação do usuario ao grupo
-{% endcomment %}
+{% extends "admin/change_list.html" %}
+{# Orientação exibida no topo da lista de perfis para o fluxo de aprovação. #}
+{# Ordem: filtrar por status pendente, selecionar os cadastros e executar a ação. #}
 {% block content %}
 <ul class="messagelist">
   <li class="info">
@@ -10,5 +9,5 @@
     aprovação ativa o login e coloca o usuário no grupo solicitado.
   </li>
 </ul>
-{{ block.super }} 
+{{ block.super }}
 {% endblock %}
