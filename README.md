@@ -1,251 +1,263 @@
 # Sistema de Agendamento
 
-Sistema web completo para gerenciamento de agendamentos desenvolvido com Python/Flask. Permite que a central de atendimento agende horarios com colaboradores, que cada colaborador gerencie sua propria agenda, e que administradores tenham controle total sobre os dados.
+Sistema web de agendamento para intranet, migrado do app Flask original para
+**Django**. A central de atendimento escolhe o profissional e reserva um horário
+livre; cada profissional mantém a própria grade, acompanha a agenda e atualiza o
+status dos atendimentos; a recepção consulta os agendados e o histórico; e o
+administrador aprova os cadastros.
 
-Inclui recursos de **Progressive Web App (PWA)**, permitindo instalação em dispositivos moveis e desktop.
+> **Branch `alterDjango`** — o app Flask antigo foi preservado em `app_antigo/`
+> apenas como referência e não faz parte da aplicação Django em execução.
 
-**OBS:** SISTEMA DESENVOLVIDO PARA INTRANET , ANALIZAR QUESTÕES DE SEGURANÇA EM CASO DE SUBIR PARA REDE GLOBAL 
+## Visão geral
+
+- A central **não escolhe data manualmente**: seleciona o profissional e o
+  sistema devolve os horários livres dos próximos 21 dias, gerados a partir da
+  grade e do intervalo definidos pelo profissional.
+- Os horários são clicáveis e abrem um modal para preencher os dados do cliente.
+- O profissional vê o calendário do mês, navega entre meses, clica em um dia e
+  consulta a agenda daquele dia.
+- Remarcações atualizam o contador e exibem o selo `Remarcado` ou
+  `RemarcadoNx`.
+- O cadastro cria um usuário inativo e um perfil pendente; a liberação é feita
+  pelo administrador no Django Admin.
 
 ## Funcionalidades
 
-### Central de Atendimento
-- Agendamento de horarios com colaboradores
-- Seleção de data e horarios disponiveis em tempo real
-- Cadastro de dados do cliente (nome, CPF, telefone, observacoes)
-- Visualização e cancelamento de agendamentos
-- Alertas de agendamentos pendentes em atraso
-- Seleção obrigatoria do responsavel (usuario da central) no agendamento
-- Atualização automatica a cada 15 segundos
+### Autenticação e cadastro
 
-### Colaborador
-- Cadastro de horarios disponiveis (data única ou recorrência semanal)
-- Visualização em calendario dos dias com agendamentos (navegação mensal)
-- Controle de status dos atendimentos (Atendido, Ausente, Cancelado)
-- Notificação de agendamentos pendentes em atraso
-- Visualização do responsavel (central) nos detalhes do agendamento
-- Atualização automatica a cada 15 segundos
+- Cadastro com nome, usuário, senha, confirmação de senha e escolha do perfil.
+- Conta criada como inativa, aguardando aprovação do administrador.
+- Login com redirecionamento automático para a página do perfil.
+- Bloqueio de acesso para usuários pendentes ou inativos.
+- Logout e mensagens de feedback em todas as telas.
+
+### Central de Atendimento
+
+- Seleção do profissional.
+- Horários disponíveis agrupados por dia, respeitando o intervalo da grade.
+- Reserva por clique no horário, com modal de confirmação.
+- Cadastro dos dados do cliente: nome, CPF, telefone, tipo de serviço e
+  observações.
+- Lista de agendamentos futuros com edição e remarcação.
+- Validação de horário disponível antes de gravar, evitando conflitos.
+
+### Profissional
+
+- Painel com atendimentos de hoje, atrasados, próximos e total de grades.
+- Calendário mensal clicável com navegação para o mês anterior e o próximo.
+- Agenda do dia selecionado.
+- Alteração de status: atendido, ausente ou cancelado.
+- Remarcação de atendimentos.
+- Cadastro e exclusão de grades fixas (data específica) ou semanais.
+- Definição do intervalo entre horários (15, 20, 30, 45, 60 ou 90 minutos).
+
+### Recepção
+
+- Consulta dos próximos agendamentos.
+- Histórico recente e histórico completo com filtros.
+- Sem acesso a atrasados e sem exibição de observações.
 
 ### Administração
-- **Gerenciar Colaboradores**: Cadastrar, editar e excluir colaboradores (exclui horarios e agendamentos em cascata)
-- **Gerenciar Atendimento**: Cadastrar e remover usuarios da central de atendimento
-- **Gerenciar Horarios**: Visualizar e excluir horarios de qualquer colaborador
-- **Gerenciar Agendamentos**: Filtrar por periodo, status e colaborador; editar dados ou excluir
-- **Dashboard**: Estatisticas com totais, agendamentos hoje, ultimos 7 dias, por status e por colaborador
-- **Historico**: Consulta de atendimentos concluidos com filtros
-- **Backup**: Exportação manual do banco de dados (pasta `Backup/` com timestamp)
-- **Autenticação**: Login protegido com credenciais alteraveis (hash SHA-256)
+
+- Django Admin com usuários, perfis, grades e agendamentos.
+- Aprovação ou rejeição de cadastros por action no changelist de perfis.
+- Criação de grupos e permissões por data migration.
+- Visualização de agendamentos, grades e histórico.
+
+## Regras de negócio
+
+- **Grupos de acesso:** `recepcao`, `central`, `profissional` e superuser/admin.
+- **Recepção:** vê apenas agendados e histórico; não vê atrasados nem
+  observações.
+- **Central:** cria, edita e remarca agendamentos; não vê atrasados.
+- **Profissional:** vê hoje, atrasados, calendário, status e remarcação.
+- **Cadastro:** cria `User(is_active=False)` e `Profile` com status pendente.
+- **Aprovação:** feita pelo admin, que ativa o usuário e o adiciona ao grupo
+  correspondente.
+- **Grade semanal:** exige `date IS NULL` e `day_week` preenchido.
+- **Grade fixa:** exige uma data específica.
+- **Conflito de horário:** a constraint `unique_active_slot` impede dois
+  agendamentos ativos no mesmo profissional, data e horário.
+- **Remarcação:** incrementa `num_reschedules`; o template exibe `Remarcado`
+  para 1 e `RemarcadoNx` para 2 ou mais.
+- **Horários passados:** não aparecem como disponíveis.
 
 ## Tecnologias
 
-- **Backend**: Python 3.x, Flask
-- **Frontend**: HTML5, Bootstrap 5, JavaScript
-- **Banco de Dados**: SQLite
-- **PWA**: Service Worker, Web Manifest
+- **Backend:** Python 3.12+, Django 6.1, Poetry.
+- **Banco de desenvolvimento:** SQLite (`db.sqlite3`).
+- **Banco de produção:** PostgreSQL previsto para a etapa de Docker no servidor.
+- **Frontend:** Bootstrap 5.3 em tema escuro, Bootstrap Icons, CSS próprio.
+- **PWA:** manifest e ícone para instalação na intranet.
+- **Testes:** suíte Django com 34 testes.
 
 ## Estrutura
 
-```
+```text
 app_agendamento/
-├── app.py                        # Aplicação principal Flask (525 linhas)
-├── pyproject.toml                # Configuração Poetry
-├── poetry.lock                   # Dependencias travadas
-├── Makefile                      # Atalhos: make run / make add
-├── ci.ps1                        # Script de testes automatizados (14 testes)
-├── backup.ps1                    # Script de backup mensal
-├── .agenda.db                    # Banco de dados SQLite (criado automaticamente)
-├── .gitignore
-├── .gitattributes
-├── LICENSE                       # Licença MIT
-├── README.md
-├── templates/
-│   ├── landing.html              # Pagina inicial (dois botoes: Atendimento / Colaborador)
-│   ├── login_admin.html          # Login do admin
-│   ├── acesso_atendimento.html   # Entrada da central (1 clique)
-│   ├── acesso_colaborador.html   # Entrada do colaborador (selecionar ou cadastrar nome)
-│   ├── index.html                # Painel administrativo (gerenciamento completo)
-│   ├── atendimento.html          # Central de atendimento (agendamento)
-│   ├── colaborador.html          # Painel do colaborador (agenda propria)
-│   └── historico.html            # Historico de atendimentos concluidos
-└── static/
-    ├── icon.svg                  # Icone PWA
-    ├── manifest.json             # Manifest PWA generico
-    ├── manifest-central.json     # Manifest PWA para central de atendimento
-    ├── manifest-pedagogico.json  # Manifest PWA para colaborador
-    └── sw.js                     # Service Worker
+├── manage.py
+├── pyproject.toml
+├── poetry.lock
+├── .env.example
+├── mainsetup/
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── control/
+│   ├── models.py            # Profile, ScheduleTime, Appointment
+│   ├── managers.py          # Consultas de agendamentos
+│   ├── services.py          # Geração e disponibilidade de horários
+│   ├── forms.py             # Cadastro, agendamento e grade
+│   ├── views.py             # Páginas e fluxos por perfil
+│   ├── decorators.py        # Restrição por grupo
+│   ├── context_processors.py
+│   ├── admin.py             # Actions de aprovação/rejeição
+│   ├── migrations/
+│   ├── templates/
+│   │   ├── admin/           # Ajustes do admin
+│   │   └── control/
+│   │       ├── layouts/      # Layout base
+│   │       ├── pages/        # Landing, painéis e histórico
+│   │       ├── auth/         # Login, cadastro e aprovação
+│   │       ├── appointments/ # Edição e remarcação
+│   │       ├── schedules/    # Cadastro de grade
+│   │       └── errors/       # Páginas 403, 404 e 500
+│   └── tests.py             # 34 testes automatizados
+├── static/
+│   ├── css/app.css
+│   ├── icon.svg
+│   └── manifest.json
+├── app_antigo/              # Referência Flask (não executar)
+├── Dockerfile
+├── docker-compose.yaml
+└── README.md
 ```
 
-## Instalação
+## Como rodar
 
-### Pre-requisitos
-- Python 3.13 ou superior
-- pip (ou Poetry, opcional)
+### Pré-requisitos
 
-### Passos (pip)
+- Python 3.12 ou superior.
+- Poetry instalado.
+- Git.
 
-1. Clone o repositorio:
+### Passos
+
+1. Clone o repositório e entre na pasta:
+
    ```bash
    git clone <url>
    cd app_agendamento
    ```
 
-2. Crie um ambiente virtual (recomendado):
+2. Instale as dependências:
+
    ```bash
-   python -m venv venv
-   # Windows:
-   venv\Scripts\activate
-   # Linux/Mac:
-   source venv/bin/activate
+   poetry install
    ```
 
-3. Instale as dependencias:
-   ```bash
-   pip install flask
+3. Crie o arquivo de ambiente:
+
+   ```powershell
+   Copy-Item .env.example .env
    ```
 
-4. Execute:
+   Edite `.env` e defina uma `SECRET_KEY` segura. Em desenvolvimento, mantenha
+   `DEBUG=True` e `ALLOWED_HOSTS=127.0.0.1,localhost`.
+
+4. Aplique as migrations:
+
    ```bash
-   python app.py
+   poetry run python manage.py migrate
    ```
 
-### Passos (Poetry)
+5. Crie o superusuário:
+
+   ```bash
+   poetry run python manage.py createsuperuser
+   ```
+
+6. Suba o servidor:
+
+   ```bash
+   poetry run python manage.py runserver
+   ```
+
+7. Acesse:
+
+   - Aplicação: `http://localhost:8000/agendamento.app/`
+   - Admin: `http://localhost:8000/admin/`
+
+> O banco SQLite é criado automaticamente na primeira migration.
+
+## Variáveis de ambiente
+
+| Variável | Descrição | Exemplo |
+|---|---|---|
+| `SECRET_KEY` | Chave secreta do Django | `chave-django-aqui` |
+| `DEBUG` | Modo de desenvolvimento | `True` |
+| `ALLOWED_HOSTS` | Hosts permitidos, separados por vírgula | `127.0.0.1,localhost` |
+
+## Perfis e permissões
+
+| Perfil | Acesso principal | Pode fazer |
+|---|---|---|
+| Recepção | `/agendamento.app/recepcao/` | Ver agendados e histórico |
+| Central | `/agendamento.app/central/` | Agendar, editar e remarcar |
+| Profissional | `/agendamento.app/profissional/` | Grade, calendário, status e remarcação |
+| Admin | `/admin/` | Aprovar cadastros e administrar dados |
+
+## Fluxo de agendamento
+
+1. O profissional cadastra uma grade (data específica ou semanal) e define o
+   intervalo entre atendimentos.
+2. A central escolhe o profissional na página **Novo agendamento**.
+3. O sistema lista os dias com vaga e os horários livres, já no intervalo
+   configurado.
+4. A central clica no horário desejado e confirma os dados do cliente no modal.
+5. O sistema valida a disponibilidade, calcula o horário final e grava o
+   agendamento.
+6. O profissional acompanha o atendimento no painel e no calendário.
+7. Se necessário, a central ou o profissional remarcam para outro horário livre.
+
+## Testes
 
 ```bash
-git clone <url>
-cd app_agendamento
-poetry install
-make run
+poetry run python manage.py check
+poetry run python manage.py test control
 ```
 
-Acesse no navegador:
-   - Pagina inicial: `http://localhost:5000`
-   - Painel admin: `http://localhost:5000/admin`
+A suíte cobre models, constraints, geração de horários, autenticação, cadastro,
+permissões, calendário, agendamento pela central, remarcação e histórico.
 
-> O banco de dados SQLite e criado automaticamente na primeira execução.
+## Docker
 
-## Credenciais Padrao
+Os arquivos `Dockerfile` e `docker-compose.yaml` estão preparados, mas o Docker
+será utilizado apenas na etapa final de implantação no servidor. Antes de subir
+em produção, ainda é necessário finalizar a configuração do PostgreSQL e da
+variável `DATABASE_URL`, definir `ALLOWED_HOSTS`, usar `DEBUG=False`, coletar os
+arquivos estáticos e executar a aplicação com um servidor WSGI adequado.
 
-| Acesso | Local | Credencial |
-|---|---|---|
-| Admin | `/admin` | `admin` / `admin` |
-| Central | `/inicio_atendimento` | Acesso livre (1 clique) |
-| Colaborador | `/inicio_colaborador` | Seleção do nome |
+## Destaques de desenvolvimento
 
-As credenciais de admin podem ser alteradas no proprio painel em "Alterar credenciais".
+- Migração completa do Flask para Django, mantendo o app antigo em
+  `app_antigo/` apenas como referência.
+- Modelagem com `Profile` OneToOne, grupos nativos do Django e data migrations
+  para criação dos grupos e padronização dos status.
+- Constraints de integridade para grades e para impedir double-booking.
+- Serviço centralizado de geração de horários, com suporte a grades fixas,
+  semanais e intervalos personalizados.
+- Fluxo de agendamento por profissional, sem escolha manual de data pela
+  central.
+- Calendário mensal clicável no painel do profissional, com navegação entre
+  meses e agenda do dia.
+- Remarcação com contador e badges `Remarcado` / `RemarcadoNx`.
+- Cadastro com perfil pendente e aprovação pelo admin.
+- Interface responsiva em Bootstrap 5 dark, com tema verde `#00a859`, ícones,
+  mensagens, estados vazios e páginas de erro personalizadas.
+- 34 testes automatizados cobrindo os fluxos principais.
 
-## Uso
-
-### Admin
-1. Acesse `/admin` e faca login com `admin` / `admin`
-2. Gerencie colaboradores, horarios e agendamentos
-3. Consulte estatisticas no Dashboard
-4. Faca backup do banco de dados
-5. Altere as credenciais de acesso pelo link no canto superior direito
-
-### Central de Atendimento
-1. Acesse a pagina inicial e clique em "Atendimento"
-2. Selecione o colaborador e a data desejada
-3. Escolha o horario disponivel e preencha os dados do cliente
-
-### Colaborador
-1. Acesse a pagina inicial e clique em "Colaborador"
-2. Selecione seu nome ou cadastre-se como novo
-3. Adicione seus horarios disponiveis (data unica ou semanal)
-4. Acompanhe os agendamentos no calendario
-5. Marque atendimentos como Atendido, Ausente ou Cancelado
-
-## Banco de Dados
-
-Tabelas principais:
-
-- **config** — Armazena credenciais do admin (usuario e senha com hash SHA-256)
-- **colaborador** — Dados dos colaboradores
-- **atendimento** — Usuarios da central de atendimento
-- **horarios** — Disponibilidade de horarios (com suporte a recorrencia semanal)
-- **agendamentos** — Registro de todos os agendamentos realizados (com `atendimento_user` para rastrear quem agendou)
-
-Indices: `idx_agendamentos_data`, `idx_agendamentos_colaborador`, `idx_agendamentos_status`, `idx_horarios_colaborador`
-
-Variavel de ambiente `AGENDA_DB` permite definir caminho personalizado para o arquivo `.db`.
-
-## API
-
-### Endpoints principais
-
-| Metodo | Rota | Descrição |
-|---|---|---|
-| GET | `/api/colaborador` | Lista colaboradores |
-| POST | `/api/colaborador` | Cria colaborador |
-| PATCH | `/api/colaborador/<id>` | Renomeia colaborador |
-| DELETE | `/api/colaborador/<id>` | Exclui colaborador e dados relacionados |
-| GET | `/api/atendimento` | Lista usuarios da central |
-| POST | `/api/atendimento` | Cria usuario da central |
-| PATCH | `/api/atendimento/<id>` | Renomeia usuario |
-| DELETE | `/api/atendimento/<id>` | Remove usuario da central |
-| GET | `/api/horarios/<id>` | Lista horarios de um colaborador |
-| POST | `/api/horarios` | Cria horario |
-| DELETE | `/api/horarios/<id>` | Exclui horario |
-| GET | `/api/slots` | Retorna horarios disponiveis |
-| GET | `/api/agendamentos` | Lista agendamentos (com filtros) |
-| POST | `/api/agendamentos` | Cria agendamento |
-| PATCH | `/api/agendamentos/<id>` | Edita agendamento |
-| PATCH | `/api/agendamentos/<id>/status` | Atualiza status |
-| DELETE | `/api/agendamentos/<id>` | Exclui agendamento |
-| GET | `/api/stats` | Estatisticas do sistema |
-| POST | `/api/backup` | Gera backup do banco |
-| POST | `/api/admin/change-credentials` | Altera credenciais do admin |
-
-## PWA
-
-O sistema e instalavel como aplicativo nativo em dispositivos moveis e desktop:
-- Chrome/Edge: clique no icone de instalação na barra de enderecos
-- Dispositivos moveis: menu do navegador > "Instalar aplicativo"
-
-## Changelog
-
-### [v2.7] - Jun 2026
-**Poetry, Makefile Aprimorado e Documentação**
-- Gerenciamento com Poetry (`pyproject.toml`, `poetry.lock`, `Makefile`)
-- Makefile aprimorado com comandos uteis e passagem de argumentos sem variavel nomeada
-- Backup manual agora cria pasta `Backup/` com nome de arquivo timestamp
-- Script `ci.ps1` com 14 testes automatizados (API, login, estatisticas, backup)
-- Reorganização do layout: blocos de horarios e botoes de navegação em `atendimento.html` e `colaborador.html`
-- README atualizado com documentação completa do projeto
-- Versão atualizada para `v2.7`
-
-### [v2.5] - Mai 2026
-**Tabela Atendimento e Rastreamento de Usuario**
-- Adicionada tabela `atendimento` no banco de dados
-- Coluna `atendimento_user` em agendamentos para registrar quem fez o agendamento
-- Indices de performance (`idx_agendamentos_data`, `idx_agendamentos_colaborador`, `idx_agendamentos_status`, `idx_horarios_colaborador`)
-- Endpoints CRUD `/api/atendimento` (GET, POST, PATCH, DELETE)
-- Modal "Gerenciar Atendimento" no painel admin para cadastro/remoção de usuarios
-- Select obrigatorio de responsavel no formulario de agendamento
-- Exibição do responsavel nos detalhes do colaborador
-- Coluna Telefone com formatação e filtro no historico
-- Script `backup.ps1` para backup mensal
-
-### [v2.1] - Mai 2026
-**Autenticação e Painel Administrativo**
-- Login administrativo com credenciais armazenadas no banco (padrao: admin/admin)
-- Pagina `login_admin.html` para autenticação
-- Dashboard com estatisticas (total, hoje, semana, por status, por colaborador)
-- Modal "Gerenciar Horarios" para visualizar/excluir horarios de qualquer colaborador
-- Filtros no modal de agendamentos (periodo, status, colaborador)
-- Modal "Alterar Credenciais" no admin
-- Botao de backup manual integrado ao painel
-- Corrigido botao "Voltar" do historico para admin
-- Rodape com versao padronizado em todas as paginas
-- Testes CI para as novas funcionalidades
-
-### [v2.0] - Mai 2026
-**PWA e Refatoramento de Telas**
-- Renomeação de templates: `central` -> `atendimento`, `pedagogico` -> `colaborador`
-- Progressive Web App (instalavel como aplicativo nativo)
-- Manifests separados por perfil
-- Tema escuro padrao
-- Historico por perfil de acesso
-- CI/CD basico com `ci.ps1`
-
-## Licenca
+## Licença
 
 MIT — veja o arquivo [LICENSE](LICENSE).
