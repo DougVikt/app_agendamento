@@ -1,0 +1,320 @@
+{% extends "control/layouts/base.html" %}
+{# Painel do profissional: agenda do dia, atrasados, calendário mensal e grades. #}
+{% block title %}Minha agenda · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho com atalhos para cadastrar grade e consultar o histórico. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Profissional</span>
+        <h1 class="page-title">Olá, {{ display_name }}</h1>
+        <p class="page-subtitle">Sua agenda, status dos atendimentos e grades de horário.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'control:schedule_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nova grade
+        </a>
+        <a href="{% url 'control:historico' %}" class="btn btn-outline-light">
+            <i class="bi bi-clock-history me-1"></i>Histórico
+        </a>
+    </div>
+</div>
+
+{# Indicadores do topo: hoje, atrasados, próximos e total de grades. #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <span class="stat-icon"><i class="bi bi-sun"></i></span>
+            <div>
+                <div class="stat-label">Hoje</div>
+                <div class="stat-value">{{ today_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <span class="stat-icon is-danger"><i class="bi bi-exclamation-triangle"></i></span>
+            <div>
+                <div class="stat-label">Atrasados</div>
+                <div class="stat-value">{{ overdue_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <span class="stat-icon is-info"><i class="bi bi-calendar2-week"></i></span>
+            <div>
+                <div class="stat-label">Próximos</div>
+                <div class="stat-value">{{ upcoming_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <span class="stat-icon is-warning"><i class="bi bi-clock"></i></span>
+            <div>
+                <div class="stat-label">Grades</div>
+                <div class="stat-value">{{ schedule_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Faixa de alerta para atendimentos vencidos que precisam de remarcação. #}
+{% if overdue_list %}
+<div class="card border-danger mb-4">
+    <div class="card-header text-danger d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-exclamation-triangle me-2"></i>Atrasados — notificar</span>
+        <span class="badge text-bg-danger">{{ overdue_count }}</span>
+    </div>
+    <div class="list-group list-group-flush">
+        {% for a in overdue_list %}
+        <div class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <span class="time-pill">{{ a.start_time|time:"H:i" }}</span>
+                <strong class="ms-1">{{ a.client }}</strong>
+                <span class="text-muted small ms-1">{{ a.date|date:"d/m/Y" }}</span>
+                <span class="badge text-bg-{{ a.status_badge_class }} ms-1">{{ a.get_status_display }}</span>
+            </div>
+            <a href="{% url 'control:appointment_reschedule' a.id %}" class="btn btn-sm btn-warning">
+                <i class="bi bi-arrow-repeat me-1"></i>Remarcar
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        {# Agenda do dia com ações rápidas de status: atendido, ausente ou cancelado. #}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-sun me-2"></i>Hoje · {{ today|date:"d/m/Y" }}</span>
+                <span class="badge text-bg-success">{{ today_count }}</span>
+            </div>
+            <div class="card-body">
+                {% for a in today_list %}
+                <div class="agenda-item">
+                    <div class="agenda-time">{{ a.start_time|time:"H:i" }}</div>
+                    <div class="agenda-body">
+                        <div class="d-flex flex-wrap justify-content-between gap-2">
+                            <div>
+                                <strong>{{ a.client }}</strong>
+                                <div class="small text-muted">
+                                    {{ a.service_type }}
+                                    {% if a.created_by %} · atendente {{ a.created_by.get_full_name|default:a.created_by.username }}{% endif %}
+                                </div>
+                            </div>
+                            <span class="badge text-bg-{{ a.status_badge_class }}">{{ a.get_status_display }}</span>
+                        </div>
+                        {# Cada botão envia o novo status para a view appointment_status. #}
+                        <form method="post" action="{% url 'control:appointment_status' a.id %}" class="d-flex flex-wrap gap-1 mt-2">
+                            {% csrf_token %}
+                            <button type="submit" name="status" value="atendido" class="btn btn-sm btn-success">
+                                <i class="bi bi-check2 me-1"></i>Atendido
+                            </button>
+                            <button type="submit" name="status" value="ausente" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-person-x me-1"></i>Ausente
+                            </button>
+                            <button type="submit" name="status" value="cancelado" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-x-lg me-1"></i>Cancelar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-cup-hot"></i>
+                    <h2>Nada para hoje</h2>
+                    <p>Você não tem atendimentos agendados para hoje.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Próximos atendimentos com atalho direto para remarcação. #}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar2-week me-2"></i>Próximos atendimentos</span>
+                <span class="badge text-bg-secondary">{{ upcoming_count }}</span>
+            </div>
+            <div class="card-body">
+                {% for a in upcoming %}
+                <div class="agenda-item">
+                    <div class="agenda-time">
+                        {{ a.start_time|time:"H:i" }}
+                        <span>{{ a.date|date:"d/m" }}</span>
+                    </div>
+                    <div class="agenda-body">
+                        <div class="d-flex flex-wrap justify-content-between gap-2">
+                            <div>
+                                <strong>{{ a.client }}</strong>
+                                {% if a.reschedule_badge %}<span class="badge text-bg-info ms-1">{{ a.reschedule_badge }}</span>{% endif %}
+                                <div class="small text-muted">
+                                    {{ a.service_type }}
+                                    {% if a.created_by %} · atendente {{ a.created_by.get_full_name|default:a.created_by.username }}{% endif %}
+                                </div>
+                            </div>
+                            <a href="{% url 'control:appointment_reschedule' a.id %}" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-arrow-repeat me-1"></i>Remarcar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-calendar-x"></i>
+                    <h2>Nenhum próximo atendimento</h2>
+                    <p>Novos agendamentos aparecerão aqui.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        {# Calendário mensal navegável; dias com atendimento exibem um contador. #}
+        <div class="card mb-4">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span><i class="bi bi-calendar3 me-2"></i>{{ calendar_month_label }}</span>
+                <div class="month-nav">
+                    <a href="?month={{ prev_month }}" class="btn btn-sm btn-outline-light" title="Mês anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                    <a href="?month={{ today|date:'Y-m' }}" class="btn btn-sm btn-outline-success" title="Mês atual">Hoje</a>
+                    <a href="?month={{ next_month }}" class="btn btn-sm btn-outline-light" title="Próximo mês">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="calendar-weekdays">
+                    {% for weekday in calendar_weekdays %}<span>{{ weekday }}</span>{% endfor %}
+                </div>
+                <div class="calendar-grid">
+                    {% for week in calendar_weeks %}
+                        {% for day in week %}
+                            {% if day %}
+                            <a class="calendar-day{% if day.is_today %} is-today{% endif %}{% if day.has_appointments %} has-appointments{% endif %}{% if day.is_selected %} is-selected{% endif %}"
+                               href="?month={{ month_param }}&amp;day={{ day.date|date:'Y-m-d' }}#agenda-dia"
+                               title="{{ day.count }} atendimento{{ day.count|pluralize }}">
+                                <span class="cal-number">{{ day.day }}</span>
+                                {% if day.has_appointments %}<span class="cal-count">{{ day.count }}</span>{% endif %}
+                            </a>
+                            {% else %}
+                            <span class="calendar-day is-empty"></span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <div class="calendar-legend">
+                    <span><i class="bi bi-circle-fill text-success"></i>Com atendimento</span>
+                    <span><i class="bi bi-circle-fill text-secondary"></i>Hoje</span>
+                </div>
+            </div>
+        </div>
+
+        {# Detalhe do dia selecionado no calendário (âncora #agenda-dia). #}
+        <div class="card" id="agenda-dia">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="bi bi-list-check me-2"></i>
+                    {% if selected_day %}Agenda de {{ selected_day|date:"d/m/Y" }}{% else %}Agenda do dia{% endif %}
+                </span>
+                {% if selected_day %}
+                <a href="?month={{ month_param }}" class="btn btn-sm btn-outline-light">Limpar</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if selected_day %}
+                    {% for a in selected_day_appointments %}
+                    <div class="agenda-item">
+                        <div class="agenda-time">{{ a.start_time|time:"H:i" }}</div>
+                        <div class="agenda-body">
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong>{{ a.client }}</strong>
+                                <span class="badge text-bg-{{ a.status_badge_class }}">{{ a.get_status_display }}</span>
+                            </div>
+                            <div class="small text-muted">
+                                {{ a.service_type }} · {{ a.professional.get_full_name|default:a.professional.username }}
+                            </div>
+                            {% if a.reschedule_badge %}<span class="badge text-bg-info mt-1">{{ a.reschedule_badge }}</span>{% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <h2>Nenhum atendimento</h2>
+                        <p>Este dia não possui atendimentos.</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-hand-index-thumb"></i>
+                    <h2>Selecione um dia</h2>
+                    <p>Clique em um dia do calendário para ver os atendimentos.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Tabela das grades cadastradas e ação de exclusão com confirmação. #}
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock me-2"></i>Minha grade de horários</span>
+        <a href="{% url 'control:schedule_create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Cadastrar
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-app align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Dia</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Intervalo</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in schedules %}
+                <tr>
+                    <td>
+                        {% if s.recurring %}
+                        <span class="badge text-bg-success">Semanal</span>
+                        {% else %}
+                        <span class="badge text-bg-secondary">Data específica</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if s.recurring %}{{ s.get_day_week_display }}{% else %}{{ s.date|date:"d/m/Y" }}{% endif %}
+                    </td>
+                    <td>{{ s.start_time|time:"H:i" }}</td>
+                    <td>{{ s.end_time|time:"H:i" }}</td>
+                    <td>{{ s.interval }} min</td>
+                    <td class="text-end">
+                        <a href="{% url 'control:schedule_delete' s.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir esta grade?')" title="Excluir" aria-label="Excluir grade de horários">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="bi bi-clock-history"></i>
+                            <h2>Nenhuma grade cadastrada</h2>
+                            <p>Cadastre seus dias e horários para liberar agendamentos.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

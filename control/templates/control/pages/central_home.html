@@ -1,0 +1,240 @@
+{% extends "control/layouts/base.html" %}
+{# Central de Atendimento: cria agendamentos a partir dos horários livres do profissional. #}
+{% block title %}Central de Atendimento · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho da página e atalho para o histórico completo. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Central de Atendimento</span>
+        <h1 class="page-title">Novo agendamento</h1>
+        <p class="page-subtitle">Escolha o profissional e veja os horários disponíveis da agenda dele.</p>
+    </div>
+    <a href="{% url 'control:historico' %}" class="btn btn-outline-light">
+        <i class="bi bi-clock-history me-1"></i>Histórico
+    </a>
+</div>
+
+{# Erro de validação devolvido pela view ao tentar reservar um horário. #}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{# Filtro por profissional: considera apenas usuários ativos do grupo profissional. #}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-lg-8">
+                <label class="form-label" for="professional">Profissional</label>
+                <select name="professional" id="professional" class="form-select form-select-lg" required>
+                    <option value="">Selecione um profissional...</option>
+                    {% for p in professionals %}
+                    <option value="{{ p.id }}" {% if selected_pro and selected_pro.id == p.id %}selected{% endif %}>
+                        {{ p.get_full_name|default:p.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Os horários são gerados a partir da grade e do intervalo cadastrados pelo profissional.</div>
+            </div>
+            <div class="col-lg-4 d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search me-2"></i>Ver horários disponíveis
+                </button>
+            </div>
+        </form>
+        {# Aviso quando não há profissionais ativos liberados para agendamento. #}
+        {% if not professionals %}
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Nenhum profissional ativo cadastrado. Peça ao administrador para liberar um profissional.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# Resultado do filtro: grades vigentes, dias com vaga e botões de horário. #}
+{% if selected_pro %}
+<div class="card mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>
+            <i class="bi bi-person-badge me-2"></i>
+            {{ selected_pro.get_full_name|default:selected_pro.username }}
+        </span>
+        <span class="badge text-bg-success">
+            {{ available_days|length }} dia{{ available_days|length|pluralize }} com vaga
+        </span>
+    </div>
+    <div class="card-body">
+        {# Resumo das grades que geraram os horários exibidos. #}
+        {% if selected_schedules %}
+        <div class="schedule-strip mb-3">
+            {% for s in selected_schedules %}
+            <span class="schedule-chip">
+                <i class="bi bi-clock me-1"></i>
+                {% if s.recurring %}{{ s.get_day_week_display }}{% else %}{{ s.date|date:"d/m/Y" }}{% endif %}
+                · {{ s.start_time|time:"H:i" }}–{{ s.end_time|time:"H:i" }} · {{ s.interval }} min
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Cada cartão representa um dia com vagas; os botões abrem o modal de reserva. #}
+        {% if available_days %}
+        <div class="row g-3">
+            {% for day in available_days %}
+            <div class="col-md-6 col-xl-4">
+                <div class="day-card">
+                    <div class="day-card-head">
+                        <span>{{ day.weekday_label }}</span>
+                        <strong>{{ day.date|date:"d/m" }}</strong>
+                    </div>
+                    <div class="slot-grid">
+                        {% for slot in day.slots %}
+                        <button type="button" class="slot-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-date="{{ day.date|date:'Y-m-d' }}" data-time="{{ slot|time:'H:i' }}" data-label="{{ day.weekday_label }}, {{ day.date|date:'d/m/Y' }} às {{ slot|time:'H:i' }}">
+                            {{ slot|time:"H:i" }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {# Estado vazio quando o profissional não tem vagas nas próximas três semanas. #}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h2>Sem horários livres</h2>
+            <p>O profissional não possui vagas nos próximos 21 dias. Confira a grade ou escolha outro profissional.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{# Lista de agendamentos futuros, com ações de edição e remarcação. #}
+<div class="card">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>
+            <i class="bi bi-calendar2-check me-2"></i>Agendados
+            {% if selected_pro %} · {{ selected_pro.get_full_name|default:selected_pro.username }}{% endif %}
+        </span>
+        <span class="badge text-bg-secondary">{{ upcoming_count }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-app align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Profissional</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in upcoming %}
+                <tr>
+                    <td class="text-nowrap">{{ a.date|date:"d/m/Y" }}</td>
+                    <td><span class="time-pill">{{ a.start_time|time:"H:i" }}</span></td>
+                    <td>
+                        <div class="fw-semibold">{{ a.client }}</div>
+                        {% if a.reschedule_badge %}<span class="badge text-bg-info">{{ a.reschedule_badge }}</span>{% endif %}
+                    </td>
+                    <td>{{ a.professional.get_full_name|default:a.professional.username }}</td>
+                    <td><span class="badge text-bg-{{ a.status_badge_class }}">{{ a.get_status_display }}</span></td>
+                    <td class="text-end text-nowrap">
+                        <a href="{% url 'control:appointment_edit' a.id %}" class="btn btn-sm btn-outline-light" title="Editar" aria-label="Editar agendamento de {{ a.client }}">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'control:appointment_reschedule' a.id %}" class="btn btn-sm btn-outline-warning" title="Remarcar" aria-label="Remarcar agendamento de {{ a.client }}">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <h2>Nenhum agendamento futuro</h2>
+                            <p>Escolha um profissional acima para ver os horários e criar um agendamento.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Modal único reutilizado pelos botões de horário; os campos ocultos são preenchidos via JS. #}
+{% if selected_pro %}
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form method="post" action="{% url 'control:appointment_create' %}" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="professional" value="{{ selected_pro.id }}" />
+                <input type="hidden" name="date" id="bookingDate" />
+                <input type="hidden" name="start_time" id="bookingTime" />
+                <div class="modal-header">
+                    <div>
+                        <span class="eyebrow">Novo agendamento</span>
+                        <h2 class="modal-title h5" id="bookingModalLabel">Confirmar horário</h2>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="booking-summary mb-3" id="bookingSummary">Selecione um horário.</div>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="{{ booking_form.client.id_for_label }}">Cliente</label>
+                            {{ booking_form.client }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="{{ booking_form.cpf.id_for_label }}">CPF</label>
+                            {{ booking_form.cpf }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ booking_form.phone.id_for_label }}">Telefone</label>
+                            {{ booking_form.phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ booking_form.service_type.id_for_label }}">Tipo de serviço</label>
+                            {{ booking_form.service_type }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="{{ booking_form.comments.id_for_label }}">Observações</label>
+                            {{ booking_form.comments }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2 me-1"></i>Confirmar agendamento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{# Preenche data, hora e resumo do modal conforme o horário clicado. #}
+<script>
+    const bookingModal = document.getElementById('bookingModal');
+    if (bookingModal) {
+        bookingModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            if (!button) return;
+            bookingModal.querySelector('#bookingDate').value = button.dataset.date;
+            bookingModal.querySelector('#bookingTime').value = button.dataset.time;
+            bookingModal.querySelector('#bookingSummary').innerHTML =
+                '<i class="bi bi-calendar-check me-2"></i><strong>' + button.dataset.label + '</strong>';
+        });
+    }
+</script>
+{% endblock %}
