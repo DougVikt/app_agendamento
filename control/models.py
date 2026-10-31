@@ -167,6 +167,16 @@ class Appointment(models.Model):
         return None
 
     @property
+    def status_badge_class(self):
+        # classe Bootstrap correspondente ao status atual
+        return {
+            'agendado': 'primary',
+            'atendido': 'success',
+            'ausente': 'warning text-dark',
+            'cancelado': 'secondary',
+        }.get(self.status, 'secondary')
+
+    @property
     def overdue(self):
         # função para definir os agendamentos atrasados 
         from django.utils import timezone
