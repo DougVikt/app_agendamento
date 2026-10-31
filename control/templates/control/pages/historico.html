@@ -1,0 +1,138 @@
+{% extends "control/layouts/base.html" %}
+{# Histórico: filtros combináveis e visão restrita para a recepção. #}
+{% block title %}Histórico · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho e retorno para a home do perfil atual. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Relatórios</span>
+        <h1 class="page-title">Histórico de atendimentos</h1>
+        <p class="page-subtitle">Consulte atendimentos por cliente, período, status e profissional.</p>
+    </div>
+    <a href="{% url 'control:home' %}" class="btn btn-outline-light">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+</div>
+
+{# Filtros por cliente, contato, período, status, profissional e atendente. #}
+<form method="get" class="card filters-card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" for="filter-cliente">Cliente</label>
+                <input name="cliente" id="filter-cliente" value="{{ filtros.cliente }}" class="form-control" placeholder="Nome do cliente" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="filter-cpf">CPF</label>
+                <input name="cpf" id="filter-cpf" value="{{ filtros.cpf }}" class="form-control" placeholder="000.000.000-00" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="filter-telefone">Telefone</label>
+                <input name="telefone" id="filter-telefone" value="{{ filtros.telefone }}" class="form-control" placeholder="(11) 99999-9999" />
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label" for="filter-inicio">Data inicial</label>
+                <input name="data_inicio" id="filter-inicio" type="date" value="{{ filtros.data_inicio }}" class="form-control" />
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label" for="filter-fim">Data final</label>
+                <input name="data_fim" id="filter-fim" type="date" value="{{ filtros.data_fim }}" class="form-control" />
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label" for="filter-status">Status</label>
+                <select name="status" id="filter-status" class="form-select">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if filtros.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label" for="filter-profissional">Profissional</label>
+                <select name="profissional" id="filter-profissional" class="form-select">
+                    <option value="">Todos os profissionais</option>
+                    {% for p in professionals %}
+                    <option value="{{ p.id }}" {% if filtros.profissional == p.id|stringformat:"s" %}selected{% endif %}>
+                        {{ p.get_full_name|default:p.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="filter-atendente">Atendente</label>
+                <input name="atendente" id="filter-atendente" value="{{ filtros.atendente }}" class="form-control" placeholder="Nome do atendente" />
+            </div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+            </button>
+            <a href="{% url 'control:historico' %}" class="btn btn-outline-light">Limpar filtros</a>
+            <span class="ms-auto text-muted small">{{ total }} resultado{{ total|pluralize }}</span>
+        </div>
+    </div>
+</form>
+
+{# Resultados do filtro; a coluna de observações é ocultada para a recepção. #}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-app align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Cliente</th>
+                    <th>Contato</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Profissional</th>
+                    <th>Atendente</th>
+                    {% if not is_recepcao %}<th>Observações</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in agendamentos %}
+                <tr>
+                    <td class="text-nowrap">
+                        {{ a.date|date:"d/m/Y" }}
+                        <div class="small text-muted">{{ a.start_time|time:"H:i" }}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">{{ a.client }}</div>
+                        {% if a.reschedule_badge %}<span class="badge text-bg-info">{{ a.reschedule_badge }}</span>{% endif %}
+                    </td>
+                    <td class="small">
+                        {% if a.cpf %}<div><i class="bi bi-person-vcard me-1"></i>{{ a.cpf }}</div>{% endif %}
+                        {% if a.phone %}<div><i class="bi bi-telephone me-1"></i>{{ a.phone }}</div>{% endif %}
+                        {% if not a.cpf and not a.phone %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td>{{ a.service_type }}</td>
+                    <td><span class="badge text-bg-{{ a.status_badge_class }}">{{ a.get_status_display }}</span></td>
+                    <td>{{ a.professional.get_full_name|default:a.professional.username }}</td>
+                    <td>
+                        {% if a.created_by %}
+                        {{ a.created_by.get_full_name|default:a.created_by.username }}
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    {# Observações ficam visíveis apenas para central, profissional e admin. #}
+                    {% if not is_recepcao %}
+                    <td class="small text-muted">{{ a.comments|default:"—"|truncatechars:80 }}</td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_recepcao %}7{% else %}8{% endif %}">
+                        <div class="empty-state">
+                            <i class="bi bi-search"></i>
+                            <h2>Nenhum resultado</h2>
+                            <p>Ajuste os filtros para encontrar atendimentos.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
