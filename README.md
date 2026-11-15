@@ -6,9 +6,6 @@ livre; cada profissional mantém a própria grade, acompanha a agenda e atualiza
 status dos atendimentos; a recepção consulta os agendados e o histórico; e o
 administrador aprova os cadastros.
 
-> **Branch `alterDjango`** — o app Flask antigo foi preservado em `app_antigo/`
-> apenas como referência e não faz parte da aplicação Django em execução.
-
 ## Visão geral
 
 - A central **não escolhe data manualmente**: seleciona o profissional e o
