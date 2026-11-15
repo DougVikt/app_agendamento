@@ -1,0 +1,78 @@
+{% extends "control/layouts/base.html" %}
+{# Landing pública: apresenta o sistema e direciona para login ou cadastro. #}
+{% block title %}Início · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Bloco principal com chamada para ação e resumo dos perfis. #}
+<section class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">Intranet · Agendamento</span>
+        <h1>Organize atendimentos com clareza e agilidade.</h1>
+        <p class="lead">
+            Centralize a agenda dos profissionais, acompanhe o histórico e dê
+            autonomia para cada equipe em um só lugar.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a href="{% url 'control:login' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no sistema
+            </a>
+            <a href="{% url 'control:signup' %}" class="btn btn-outline-light btn-lg">
+                Criar conta
+            </a>
+        </div>
+        <div class="hero-note">
+            <i class="bi bi-shield-check"></i>
+            O acesso é liberado após a aprovação do administrador.
+        </div>
+    </div>
+
+    {# Cartões-resumo das três frentes de uso do sistema. #}
+    <div class="hero-panel">
+        <div class="role-preview">
+            <div class="role-preview-icon"><i class="bi bi-headset"></i></div>
+            <div>
+                <strong>Central de Atendimento</strong>
+                <span>Escolha o profissional e veja os horários livres na hora.</span>
+            </div>
+        </div>
+        <div class="role-preview">
+            <div class="role-preview-icon"><i class="bi bi-person-badge"></i></div>
+            <div>
+                <strong>Profissional</strong>
+                <span>Gerencie sua grade, acompanhe o dia e atualize status.</span>
+            </div>
+        </div>
+        <div class="role-preview">
+            <div class="role-preview-icon"><i class="bi bi-clipboard2-check"></i></div>
+            <div>
+                <strong>Recepção</strong>
+                <span>Consulte os próximos atendimentos e o histórico completo.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Destaques funcionais exibidos abaixo da dobra. #}
+<section class="row g-3">
+    <div class="col-md-4">
+        <div class="feature-card">
+            <i class="bi bi-calendar2-week"></i>
+            <h2>Agenda por profissional</h2>
+            <p>Cada profissional define seus dias, horários e intervalos de atendimento.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+            <i class="bi bi-lightning-charge"></i>
+            <h2>Agendamento em poucos cliques</h2>
+            <p>Selecione o profissional, clique no horário livre e confirme os dados do cliente.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+            <i class="bi bi-clock-history"></i>
+            <h2>Histórico e status</h2>
+            <p>Acompanhe atendimentos realizados, ausências, cancelamentos e remarcações.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

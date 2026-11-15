@@ -1,0 +1,132 @@
+{% extends "control/layouts/base.html" %}
+{# Painel da recepção: apenas agendados e histórico, sem atrasados/observações. #}
+{% block title %}Recepção · Sistema de Agendamento{% endblock %}
+{% block content %}
+{# Cabeçalho com atalho para o histórico completo. #}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Recepção</span>
+        <h1 class="page-title">Agendamentos</h1>
+        <p class="page-subtitle">Acompanhe os próximos atendimentos e consulte o histórico.</p>
+    </div>
+    <a href="{% url 'control:historico' %}" class="btn btn-outline-light">
+        <i class="bi bi-clock-history me-1"></i>Histórico completo
+    </a>
+</div>
+
+{# Indicadores rápidos: hoje, próximos e total do histórico. #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4">
+        <div class="stat-card">
+            <span class="stat-icon"><i class="bi bi-calendar2-day"></i></span>
+            <div>
+                <div class="stat-label">Hoje</div>
+                <div class="stat-value">{{ today_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="stat-card">
+            <span class="stat-icon is-info"><i class="bi bi-calendar2-week"></i></span>
+            <div>
+                <div class="stat-label">Próximos</div>
+                <div class="stat-value">{{ upcoming_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="stat-card">
+            <span class="stat-icon is-warning"><i class="bi bi-clock-history"></i></span>
+            <div>
+                <div class="stat-label">Histórico</div>
+                <div class="stat-value">{{ history_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Tabela de próximos agendamentos; não exibe observações para a recepção. #}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-calendar2-week me-2"></i>Próximos agendamentos</span>
+        <span class="badge text-bg-success">{{ upcoming_count }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-app align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Cliente</th>
+                    <th>Profissional</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in upcoming %}
+                <tr>
+                    <td class="text-nowrap">{{ a.date|date:"d/m/Y" }}</td>
+                    <td><span class="time-pill">{{ a.start_time|time:"H:i" }}</span></td>
+                    <td>
+                        <div class="fw-semibold">{{ a.client }}</div>
+                        {% if a.reschedule_badge %}<span class="badge text-bg-info">{{ a.reschedule_badge }}</span>{% endif %}
+                    </td>
+                    <td>{{ a.professional.get_full_name|default:a.professional.username }}</td>
+                    <td><span class="badge text-bg-{{ a.status_badge_class }}">{{ a.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <h2>Nenhum agendamento futuro</h2>
+                            <p>Os próximos atendimentos aparecerão aqui.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Últimos atendimentos concluídos, com atalho para os filtros completos. #}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>Histórico recente</span>
+        <a href="{% url 'control:historico' %}" class="btn btn-sm btn-outline-light">Ver tudo</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-app align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Cliente</th>
+                    <th>Profissional</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in history %}
+                <tr>
+                    <td class="text-nowrap">{{ a.date|date:"d/m/Y" }}</td>
+                    <td class="fw-semibold">{{ a.client }}</td>
+                    <td>{{ a.professional.get_full_name|default:a.professional.username }}</td>
+                    <td><span class="badge text-bg-{{ a.status_badge_class }}">{{ a.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h2>Sem histórico ainda</h2>
+                            <p>Os atendimentos concluídos aparecerão aqui.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
